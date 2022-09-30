@@ -1,0 +1,58 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{preamble}
+\usepackage{subfiles}
+
+\title{Design of Configuration and Monitoring System for Power Supply in ProtonCT Project.}
+\author{Håvard Birkenes}
+\date{February 2022}
+
+\begin{document}
+\renewcommand{\notinmain}[1]{}
+    \maketitle
+    \begin{center}
+        \includegraphics[width=8cm]{images/UiB-emblem_gray.pdf}
+    \end{center}
+
+
+     % Table of Contents
+   \newpage
+   \subfile{documents/abstract.tex}
+    \newpage
+    \tableofcontents
+    \newpage
+    \printglossary
+    \printglossary[type=\acronymtype]
+    \newpage
+    \subfile{documents/introduction.tex}
+    \newpage
+
+
+
+
+
+
+    \subfile{documents/theory.tex}
+\newpage
+    \subfile{documents/PCT.tex}
+\newpage
+    \subfile{documents/PCS.tex}
+\newpage
+    \subfile{documents/configuration.tex}
+\newpage
+    \subfile{documents/monitoring.tex}
+\newpage
+
+    \subfile{documents/Testing and Verification.tex}
+\newpage
+\section{Outlook and Conclusion}
+
+
+\newpage
+\subfile{documents/appendix.tex}
+
+\newpage
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

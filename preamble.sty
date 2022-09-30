@@ -1,0 +1,68 @@
+\ProvidesPackage{preamble}
+
+% General packages
+\usepackage[hidelinks]{hyperref}
+\usepackage[acronym, hyperfirst=false, nonumberlist]{glossaries}
+\usepackage{import}
+\usepackage{float}
+\usepackage[labelfont=bf]{caption}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{placeins}
+\usepackage{gensymb}
+\usepackage{parskip}
+\usepackage{rotating}
+\usepackage[titletoc,title]{appendix} 
+\usepackage{pdfpages}
+\usepackage{chngcntr}
+\counterwithin{figure}{section}
+
+%Acronyms
+\makeglossaries
+\newacronym{pcs}{PCS}{Power Control System}
+\newacronym{fifo}{FIFO}{First In First Out}
+\newacronym{pct}{pCT}{Proton Computed Tomography}
+\newacronym{ct}{CT}{Computed Tomography}
+\newacronym{oop}{OOP}{Object Oriented Programming}
+\newacronym{pmb}{PMB}{Power Monitor Board}
+\newacronym{tcp}{TCP}{Transmission Control Protocol}
+\newacronym{udp}{UDP}{User Datagram Protocol}
+\newacronym{psu}{PSU}{Power Supply Unit}
+\newacronym{rt}{RT}{Radiation Therapy}
+\newacronym{fpga}{FPGA}{Field Programmable Gate Arrays}
+\newacronym{api}{API}{Application Programming Interface}
+\newacronym{rsp}{RSP}{Relative Stopping Power}
+\newacronym{alice}{ALICE}{A Large Ion Collider Experiment}
+\newacronym{alpide}{ALPIDE}{ALICE Pixel Detector}
+\newacronym{cern}{CERN}{European Organization for Nuclear Research}
+\newacronym{dtc}{DTC}{Digital Tracking Calorimeter}
+\newacronym{its}{ITS}{Inner Tracking System}
+\newacronym{tc}{TC}{Transition Card}
+\newacronym{mb}{MB}{Monitor Board}
+\newacronym{rmw}{RMW}{read-modify-write}
+\newacronym{gui}{GUI}{Graphical User Interface}
+\newacronym{lvds}{LVDS}{Low Voltage Differential Signaling}
+\newacronym{dcs}{DCS}{Detector Control System}
+\newacronym{usart}{USART}{Universal Synchronous Asynchronous Receiver Transmitter}
+\newacronym{adc}{ADC}{Analog to Digital converter}
+\newacronym{dac}{DAC}{Digital to Analog converter}
+\newacronym{rnw}{RnW}{Read not Write}
+\newacronym{imrt}{IMRT}{Intensity-Modulated Radiation Therapy} 
+\newacronym{hdr}{HDR}{High Dose Rate}
+\newacronym{hu}{HU}{Hounsfield Unit}
+\newacronym{sobp}{SOBP}{Spread Out Bragg Peak}
+\newacronym{maps}{MAPS}{Monolithic Active Pixel Sensor}
+\newacronym{lhc}{LHC}{Large Hadron Collider}
+\newacronym{hmi}{HMI}{Human Machine Interface}
+\newacronym{scada}{SCADA}{Supervisory And Control Data Acquisition}
+\newacronym{ppc}{PPC}{Programmable Process Controller}
+\newacronym{pet}{PET}{Positron Emission Tomography}
+\newacronym{iot}{iOT}{internet Of Things}
+\newacronym{pbs}{PBS}{Pencil Beam Scanning}
+\newacronym{msb}{MSB}{Most Significant Bit}
+
+%User defined functions
+\newcommand{\notinmain}[1]{\textcolor{red}{(#1)}}
