@@ -3,11 +3,11 @@
 \begin{document}
 \section{PCT Project
 }
-\textit{This chapter will go over the PCT-project that is currently under development by the Department of Physics and technology in Bergen. It will discuss the DTC being developed for the project, how it tracks and measures the energy protons. Then a technical overview of the system is given, along with how the PCS and the control software of this thesis will be implemented.}
+\textit{This chapter covers the PCT-project that is currently under development at the Department of Physics and technology in Bergen. It discusses the DTC being developed for the project, how it tracks and measures the energy protons. Finally a technical overview of the system is given, along with how the Power Control System and the control software of this thesis will be implemented.}
 
-The Bergen \gls{pct}-project is a collaboration with the University of Bergen and many other universities and other institutions in the world, to build a \gls{pct}-scanner to be used in proton treatment. The design is based on using a \acrfull{dtc} to detect protons emitted from the particle accelerator. In particular, the focus is on creating a scanner for use on pediatric patients. This is due to pediatric patients suffer more from long term side effects of \gls{rt} and therefore proton therapy is a more suitable treatment.
+The Bergen \gls{pct}-project is a collaboration with the University of Bergen and several other universities and institutions in the world. The purpose is to build a \gls{pct}-scanner to be used in proton treatment. The design is based on using a \acrfull{dtc} to detect protons emitted from the particle accelerator. In particular, the focus is on creating a scanner for use on pediatric patients.
 
-
+\notinmain{start fra toppen av systemet, og så gå ned til sensorene}
 \subsection{ALPIDE chips}
 
 The basic pixel detector sensor used for this project is the \gls{alpide}-chips that were designed for the upgrade of the \gls{its} during the long shutdown of the \gls{lhc} during the 2019-2020 period. The chips is categorized as \gls{maps} with a span of 1.5 cm x 3 cm. The sensor is made out of a matrix of 512 x 1024 pixels and they function as binary hit/no hit sensors. A detection threshold is set for the chip, suppressing all hits that are below the threshold level, functioning as data compression for non-relevant data, such as from noise and radiation. A cross section of the \gls{alpide} sillcon is shown in \autoref{fig: alpide_cross}.
@@ -65,11 +65,11 @@ We can note from the figure that the \gls{alpide}-chip only covers about half of
 
 \subsection{Detector Control System}
 
-The \gls{dcs} of the \gls{dtc} is still in development. The \gls{dcs} is made of two parts: readout and power delivery. The readout electronics retrieve the pixel hit data from the \gls{alpide}s, while the power delivery is responsible for delivering power to the strings and monitor their current consumption. A block diagram showing the concept for the \gls{dcs} is shown in \autoref{fig: dcs_concept}
+The \gls{dcs} of the \gls{dtc} is still under development. The \gls{dcs} is made of two parts: control of readout and control of power delivery. The readout electronics retrieve the pixel hit data from the \gls{alpide}s, while the power delivery is responsible for delivering power to the strings and monitor their current consumption. A block diagram showing the concept for the \gls{dcs} is shown in \autoref{fig: dcs_concept}.
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[width=15cm]{images/dcs_concept.png}
+    \includegraphics[width=15cm]{images/dcs_concept_renewed.pdf}
     \caption{Block diagram showing the general concept of the DCS.}
     \label{fig: dcs_concept}
 \end{figure}
@@ -89,12 +89,12 @@ From the upper half of \autoref{fig: dcs_diagram}, the power delivery system is 
 
 In a similar manner the bottom half of the figure showcases the 43 readout units in charge of sending and retrieving data to and from the \gls{alpide}-chips. The readout units along with control software in the control room encompasses the control system for the readout electronics. The \gls{mb} and readout units will be connected to the \gls{tc}s through 3 metres of Firefly-cables 
 
-Another aspect to be considered in the \gls{dcs} is the radiation the various components are exposed to. The radiation from the proton therapy can have an adverse effect on circuitry and hardware. From \autoref{fig: dcs_diagram}, it is estimated that the \gls{tc} will be in the high radiation zone due to having to be close to the actual sensors, while the readout units and \gls{mb} will have minimal exposure to radiation, due to being separated by 3 metres of Firefly cables. This means that it is not necessary to accommodate more than the usual radiation protection for components involved in the power control and readout systems.
+Another aspect to be considered in the \gls{dcs} is the radiation the various components are exposed to. The radiation from the proton therapy can have an adverse effect on circuitry and hardware. From \autoref{fig: dcs_diagram}, it is estimated that the \gls{tc} will be in the high radiation zone due to having to be close to the actual sensors, while the readout units and \gls{mb} will have minimal exposure to radiation, due to being separated by at least 3 metres of Firefly cables. This means that it is not necessary to accommodate more than the usual radiation protection for components involved in the power control and readout systems.
 
 
 \subsection{Control Systems}
 
-Readout units and power supply board both require a software end point that essentially controls the entire system. This entails creating a system that can setup and configure the various parts of the system and also monitoring the system and report errors, i.e. we need to create a monitoring and configuration system.
+The Readout units and the power supply board both require a software end point that essentially controls the entire system. This entails creating a system that can setup and configure the various parts of the system and also monitoring the system and report errors, i.e. we need to create a monitoring and configuration system.
 
 A control system generally is made out of sensors, a controller to control and retrieve data from the sensors, a supervisory computer that manages the process for the sensors, and \gls{hmi} software. The \gls{hmi} software provides access to the data from the sensors to the user and if needed, also allow the user to modify and processes in the system.
 

@@ -1,0 +1,33 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+ \notinmain{ka ble ikke gjort/kva må bli gjort i fremdtiden, hvordan kan system bli gjenbrukt til readout electronics og cooling}
+
+\section{Discussion}
+\textit{This chapter will go over the functionality of the control software created in this thesis, what is complete and what is missing. It will go over missing features and how the software can be expanded in the future. There will also be a discussion on how one can re purpose the software for use in the other control systems in the PCT project.}
+
+\subsection{Future work}
+
+The control software presented in this thesis is not complete, due to time limitations and because the system it is interfacing is not complete. This section will go over work that needs to be done on the control software.
+
+
+\subsubsection{Error handling}
+The microcontroller software on the \gls{mb} lacks functions for error handling, so the error handling from the control software is also not complete. The design of the error handling has not been decided yet, therefore ideally, the error handling for the microcontroller and the software should be designed in tandem to ensure the process performs efficiently.  
+
+The microcontroller software has support for custom control functions that can be performed by writing to the control registers on the microcontroller. Utilizing these custom functions could reduce the amount of transmissions needed for error handling, and can therefore both increase the speed of the error handling algorithm, and also reduce its complexity from the software side. For example, identifying faulty strings would be a cumbersome process for the control software, having to individually turn on the strings to test their current usage would require multiple transmissions through the entire \gls{pcs}-chain. A microcontroller function that automatically turns each stave on, one-by-one, and then measure their current usage would make the process significantly easier. The control software would then simply need to call the function by writing to a register, then retrieve the current values for each string, and compare them to the expected current values.
+ The Handling error messages on the software side is not complete either, there is no established system in place for displaying or storing the error messages. Ideally a logging database would used to store the errors, along with a severity grade of the errors, allowing the user to filter error messages based on severity. InfluxDB is a candidate for such a purpose, it is a time series database and it is possible to add tag values to certain error messages to indicate severity.
+ 
+ \subsubsection{Docker Image}
+ 
+ The control system uses several different packages and programs to function. The README-file in the GitHub repository gives instructions on how to install all dependencies and run the program, but it is still cumbersome to move the system to a different computer. Therefore, in future work, a Docker Image of the system should be created. Docker is a program that allows for building an "Image", which is a virtual environment for your program, containing all dependencies necessary to run the program. By building a Docker Image of your program, moving it to other computers only requires downloading a single docker file and running it.
+ 
+ The main hub \gls{gui}, along with its lower level \gls{gui}s and \gls{api}s can all be encapsulated in one Docker Image. The databases and Grafana will most likely be located on different servers, therefore each of them should have their own Docker Image with their ports open to the \gls{gui} Image.
+ 
+ \subsection{Modularity}
+ 
+ The configuration and monitoring systems developed in this thesis have been built using software design standards to make it generic and modular. The system is layered in such a manner that similar systems can reuse the code
+ 
+ 
+
+\end{document}

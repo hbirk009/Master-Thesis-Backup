@@ -10,21 +10,28 @@
  
  \subsubsection{History and General Use}
  
- \gls{rt} was historically performed by using an external x-ray source and sending the radiation through the patient to treat growths or lesions from diseases such as lupus or skin cancer. Today, the procedure is performed in a similar manner, but better understanding of radiation behaviour and dosage planning enables us to target cancers inside the the patient and treat life threatening diseases. Imaging techniques such as \gls{ct}-scans allows us to measure the radiodensity of the tissue in a patient, which can be used to create a dosage plan for \gls{rt}. Not only does this allow us to target tumours deep inside the body, but it also allows for higher accuracy dose distribution, which minimizes the amount of radiation absorbed by healthy tissue.
+ \gls{rt} was historically performed by using an external X-ray source and sending the radiation through the patient to treat growths or lesions from diseases such as lupus or skin cancer. \autoref{fig: rt_treatment_history} shows a patient being treated with X-rays before the dangers of radiation therapy was known. Today, the procedure is performed in a similar manner, but better understanding of radiation behaviour and dosage planning enables us to target cancers inside the the patient and treat life threatening diseases. Imaging techniques such as \gls{ct}-scans allows us to measure the radiodensity of the tissue in a patient, which can be used to create a dosage plan for \gls{rt}. Not only does this allow us to target tumours deep inside the body, but it also allows for higher accuracy dose distribution, which minimizes the amount of radiation absorbed by healthy tissue.
+ 
+  \begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=8cm ]{images/x_ray_treatment_history.jpg}
+    \caption{Image showing a patient being treated for tuberculosis in 1910, using X-rays.\cite{rt_history}}
+    \label{fig: rt_treatment_history}
+\end{figure}
  
  In comparison to chemotherapy and surgery, \gls{rt} has the advantage of being a non-invasive procedure, and able to target specific areas in the body. This allows us to more effectively remove malignant tumours and it is often used alongside surgery or chemotherapy to ensure all of the tumour is removed. The downside of \gls{rt} is that when the malignant tumour is irradiated, so is the healthy tissue around the tumour, which damages it and can lead to more health issues. Using \gls{rt} in tumors near critical organs, such as the heart or brain is therefore difficult and must be carefully calibrated to ensure no harmful dose is delivered to such organs. Using \gls{rt} in areas such as the head and neck has proven to cause many long-term side effects in patients, such as cognitive impairment, neurological damage and in rare instances, a secondary cancer\cite{headRTData}. Reducing the delivered dose to the tissue is therefore crucial.
  
- Externally delivering radiation dose to a tumour is difficult due to the tissue in front of the tumour absorbing large amounts of the dose, which will destroy the tissue. This was not an issue before when treating skin cancer or growths outside the body, but treating tumours inside the body leads to giving more than a lethal dose to healthy tissue. This obviously cannot be done without killing the patient, a solution to this is the use of \gls{imrt}, a method where multiple, weaker radiation sources are focused on the tumour. This effectively spreads out the lethal entry dose throughout the body, sparing the healthy tissue while still giving the tumour a lethal dose. A study was done to compare the effectivenes of \gls{imrt} in comparison to the established method of internal \gls{rt}, \gls{hdr}\cite{imrtVShdr}. \autoref{fig: imrtvshdr} shows dose distribution of \gls{imrt} versus \gls{hdr}.
+ External delivery of radiation dose to a tumour is difficult due to the tissue in front of the tumour absorbing large amounts of the dose, which will destroy the tissue. This was not an issue before when we were treating skin cancer or growths outside the body, but new methods must be applied to treat internal tumours in a patient. A solution to this is the use of \gls{imrt}, a method where multiple, weaker radiation sources are focused on the tumour. This effectively spreads out the lethal entry dose throughout the body, sparing the healthy tissue while still giving the tumour a lethal dose. A study was done to compare the effectiveness of \gls{imrt} in comparison to the established method of internal \gls{rt}, \gls{hdr}\cite{imrtVShdr}. \autoref{fig: imrtvshdr} shows dose distribution of \gls{imrt} versus \gls{hdr}.
 
  \begin{figure}[!htpb]
     \centering
-    \includegraphics[width=8cm, ]{images/imrt vs hdr.jpg}
+    \includegraphics[width=8cm ]{images/imrt vs hdr.jpg}
     \caption{Image showing dose distribution targeting a tumour(red circle) using HDR(a) and IMRT(b)\cite{imrtVShdr}}
     \label{fig: imrtvshdr}
 \end{figure}
 \FloatBarrier 
 
-The patient was still irradiated with large doses using \gls{imrt}, but the study concluded that \gls{imrt} provided a substantial decrease in dose delivered to the organs-at-risk near the tumour, compared to \gls{hdr}. \gls{imrt} is an viable treatment, but due to the large amounts of radiation deposited in the patient it is often to dangerous to perform on malignant tumours close to critical organs.
+The patient was still irradiated with large doses using \gls{imrt}, but the study concluded that \gls{imrt} provided a substantial decrease in dose delivered to the organs-at-risk near the tumour, compared to \gls{hdr}. \gls{imrt} is a viable treatment, but due to the large amounts of radiation deposited in the patient it is often too dangerous to perform on malignant tumours close to critical organs.
 
 \subsubsection{CT-scan}
 \notinmain{kanskje nevn ein plass her om ka som er forventet av ein ideell proton terapi og korleis ein egentlig er i virkeligheten}
@@ -82,9 +89,9 @@ The effectiveness of proton therapy can be shown by comparing the dose delivered
 
 One can clearly observe from the figure that \gls{imrt} irradiates a large part of tissue outside the tumour, as the entry dose is very high as predicted by \autoref{fig: bragg_peak}. In comparison, the proton treatment not only has a lower entry dose, but most of the radiation is limited to the area around the tumour. This allows us to irradiate the tumour with higher doses than what would be possible with photons, which gives us more effective treatments against cancers.
 
-Proton therapy has potential as a treatment option, but it comes with its own challenges that must be tackled before beginning treatment. There is technical difficulties in form of sizing the facility due to requiring a particle accelerator in the treatment. There is also the physics challenge; proton's nature as a particle means its path through a medium can be unpredictable. This means that dose calculations and range calculations used for photons are insufficient for protons.\cite{proton_challenges}
+Proton therapy has potential as a treatment option, but it comes with its own challenges that must be tackled before beginning treatment. There is technical difficulties in form of sizing the facility due to requiring a particle accelerator in the treatment. There is also the physics challenge; proton's nature as a particle means it behaves differently than photons. This means that dose and range calculations used for photons are insufficient for protons.\cite{proton_challenges}
 
-Range uncertainties can have a major impact of proton therapy in comparison to \gls{rt}. \autoref{fig: proton_uncertainty} shows a relative dose comparison of photons and protons, and how range uncertainty can affect it.
+Range uncertainties can have a major impact of proton therapy in comparison to \gls{rt}. \autoref{fig: proton_uncertainty} shows a relative dose comparison of photon and proton therapy, and how range uncertainty can affect the treatments. The proton dose is delivered in such a way that the Bragg Peak of the particles is spread out in a bigger area which covers the tumour. This area is called the Spread Out Bragg Peak(SOBP). Most of the photon dose is delivered as the beam enter the tissue, with the dose gradually decreasing as the photons reach the tumour.
 
 \begin{figure}[!htpb]
     \centering
@@ -94,15 +101,16 @@ Range uncertainties can have a major impact of proton therapy in comparison to \
 \end{figure}
 \FloatBarrier
 
-The tumour is located in the red area of the graph. The dotted line is the projected dose to be delivered and the full line is the actual dose delivered as a result of range uncertainties, and in this case, it was an undershoot from the intended target. From the graph of the photons, we can see that a range uncertainty does not alter the dose delivered in a significant way, since we are already delivering such high doses in healthy tissue to begin with. For the protons, the uncertainty is more severe, an undershoot in the dose delivery lead to parts of the tumour not being irradiated and therefore the treatment did not completely remove it. Likewise, an overshoot in range estimation can lead to irradiating healthy tissue and causing permanent damage.
 
-\notinmain{kanskje ha noken nummer på range uncertainty her}The range calculations for proton therapy is usually done by performing a \gls{ct}-scan of the patient and the \acrlong{hu}s from the scan is converted to \acrlong{rsp}. \gls{rsp} is a measurement of the stopping power of a particle moving through water, which can be used to estimate particle dose deliverance. The \gls{hu} measurement have an uncertainty to it, and although the uncertainty is not necessarily increased as one converts from \gls{hu} to \gls{rsp}, it will have a greater impact on particle therapy as opposed to \gls{rt}\cite{proton_challenges}.
+The tumour is located in the red area of the graph. The dotted lines is the projected dose to be delivered to the tumour and the full line is the actual dose delivered as a result of range uncertainties. From the graph of the photons, we can see that, although there was a deviation between the projected dose delivered and the actual dose, it did not alter the dose delivered to the tumour in a significant way. For the protons, the deviation between the projected and actual dose is more severe. Because the dose delivery of the protons is centralized at the Bragg Peak, an undershoot in the dose delivery results in parts of the tumour not being covered by the Bragg Peak, and therefore almost no dose is delivered to it. Likewise, if there was an overshoot in the dose delivery, then healthy tissue could potentially enter the Bragg Peak, resulting in high irradiation of the tissue, which could cause harm to the patient. This illustrates that range uncertainty has a much bigger impact for proton therapy than in radiation therapy.
+
+\notinmain{kanskje ha noken nummer på range uncertainty her}The range calculations for proton therapy is traditionally done by performing a \gls{ct}-scan of the patient and the \acrlong{hu}s from the scan is converted to \acrlong{rsp}. \gls{rsp} is a measurement of the stopping power of a particle moving through water, which can be used to estimate particle dose deliverance. The \gls{hu} measurement have an uncertainty to it, and although the uncertainty is not necessarily increased as one converts from \gls{hu} to \gls{rsp}, it will have a greater impact on particle therapy as opposed to \gls{rt}\cite{proton_challenges}.
 
 A solution to avoid the uncertainty in the measurement is to measure the \gls{rsp} of the tissue directly, instead of converting it from \gls{hu}. This can be done by performing a \gls{ct}-scan with the same particle used for treatment, in this case a \acrfull{pct}-scan. \notinmain{fortsett med å snakke om gris-artikkelen og kanskje prøve å del opp meir av kapittelet i subsections/subsubsections}
 
 By measuring \gls{rsp} directly with a \gls{pct}, it is expected to achieve a higher range precision than the conventional conversion method used with a normal ct-scan. A study was performed to test the accuracy of a \gls{pct}-scan versus a \gls{ct}-scan. A fresh post-mortem porcine structure was used to compare the \gls{rsp} measurement between a direct \gls{pct}-measurement, and the \gls{rsp} calculated from the \gls{ct}-scan.  \cite{porcine_2021}.
 
-First, a measurement of the absolute accuracy of the \gls{pct} was done by performing a scan of eight vials containing different tissue, shown in \autoref{fig: rsp_test}
+First, a measurement of the accuracy of the \gls{pct} was done by performing a \gls{pct}-scan of eight vials containing different tissue, shown in \autoref{fig: rsp_test}. The \gls{rsp} value of these different tissues was measured beforehand, with a multi-layered ionization chamber, and the \gls{rsp} values from that experiment is compared with the \gls{rsp} from the \gls{pct}-scan.
 
 \begin{figure}[!htpb]
     \centering
@@ -112,7 +120,7 @@ First, a measurement of the absolute accuracy of the \gls{pct} was done by perfo
 \end{figure}
 \FloatBarrier
 
-The test revealed that the \gls{pct}-measurements were in agreement with the actual \gls{rsp}, there was up to a 1\% difference between them. There was an outlier of -4\% difference in the sinus tissue, but this can be caused by the low \gls{rsp} of the tissue along with the uncertainty of the \gls{pct} measurement. The range uncertainty from converting from \gls{hu} to \gls{rsp} has been shown to be at most 3.5\%\cite{Paganetti_2012}. This shows that \gls{pct} yields higher accuracy measurements than a \gls{ct}-scan. 
+The test revealed that there was up to a 1\% difference between \gls{rsp} of the \gls{pct} and the ionization chamber. There was an outlier of -4\% difference in the sinus tissue, but this can be caused by the low \gls{rsp} of the tissue along with the uncertainty of the \gls{pct} measurement. The range uncertainty from converting from \gls{hu} to \gls{rsp} has been shown to be at most 3.5\%\cite{Paganetti_2012}. This shows that \gls{pct} yields higher accuracy measurements than a \gls{ct}-scan. 
 
 
 The next test directly compared the \gls{rsp} data between \gls{pct} and \gls{ct}. Result is shown in \autoref{fig: porcine_pct_vs_ct}.
