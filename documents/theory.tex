@@ -21,7 +21,7 @@
  
  In comparison to chemotherapy and surgery, \gls{rt} has the advantage of being a non-invasive procedure, and able to target specific areas in the body. This allows us to more effectively remove malignant tumours and it is often used alongside surgery or chemotherapy to ensure all of the tumour is removed. The downside of \gls{rt} is that when the malignant tumour is irradiated, so is the healthy tissue around the tumour, which damages it and can lead to more health issues. Using \gls{rt} in tumors near critical organs, such as the heart or brain is therefore difficult and must be carefully calibrated to ensure no harmful dose is delivered to such organs. Using \gls{rt} in areas such as the head and neck has proven to cause many long-term side effects in patients, such as cognitive impairment, neurological damage and in rare instances, a secondary cancer\cite{headRTData}. Reducing the delivered dose to the tissue is therefore crucial.
  
- External delivery of radiation dose to a tumour is difficult due to the tissue in front of the tumour absorbing large amounts of the dose, which will destroy the tissue. This was not an issue before when we were treating skin cancer or growths outside the body, but new methods must be applied to treat internal tumours in a patient. A solution to this is the use of \gls{imrt}, a method where multiple, weaker radiation sources are focused on the tumour. This effectively spreads out the lethal entry dose throughout the body, sparing the healthy tissue while still giving the tumour a lethal dose. A study was done to compare the effectiveness of \gls{imrt} in comparison to the established method of internal \gls{rt}, \gls{hdr}\cite{imrtVShdr}. \autoref{fig: imrtvshdr} shows dose distribution of \gls{imrt} versus \gls{hdr}.
+ External delivery of radiation dose to a tumour is difficult due to the tissue in front of the tumour absorbing large amounts of the dose, which will destroy the tissue. This was not an issue before when we were treating skin cancer or growths outside the body, but new methods must be applied to treat internal tumours in a patient. A solution to this is the use of \gls{imrt}, a method where multiple, weaker radiation sources are focused on the tumour. This effectively spreads out the high entry dose throughout the body, sparing the healthy tissue while still giving the tumour a lethal dose. A study was done to compare the effectiveness of \gls{imrt} in comparison to the use of \gls{hdr} brachytherapy \cite{imrtVShdr}. \autoref{fig: imrtvshdr} shows dose distribution of \gls{imrt} versus \gls{hdr}.
 
  \begin{figure}[!htpb]
     \centering
@@ -87,9 +87,9 @@ The effectiveness of proton therapy can be shown by comparing the dose delivered
 \end{figure}
 \FloatBarrier
 
-One can clearly observe from the figure that \gls{imrt} irradiates a large part of tissue outside the tumour, as the entry dose is very high as predicted by \autoref{fig: bragg_peak}. In comparison, the proton treatment not only has a lower entry dose, but most of the radiation is limited to the area around the tumour. This allows us to irradiate the tumour with higher doses than what would be possible with photons, which gives us more effective treatments against cancers.
+One can clearly observe from the figure that \gls{imrt} irradiates a large part of tissue outside the tumour, as the entry and exit dose is high as predicted by \autoref{fig: bragg_peak}. In comparison, the proton treatment not only has a lower entry dose, but most of the radiation is limited to the area around the tumour. This allows us to irradiate the tumour with higher doses than what would be possible with photons, which gives us more effective treatments against cancers.
 
-Proton therapy has potential as a treatment option, but it comes with its own challenges that must be tackled before beginning treatment. There is technical difficulties in form of sizing the facility due to requiring a particle accelerator in the treatment. There is also the physics challenge; proton's nature as a particle means it behaves differently than photons. This means that dose and range calculations used for photons are insufficient for protons.\cite{proton_challenges}
+Proton therapy has potential as a treatment option, but it comes with its own challenges that must be tackled before beginning treatment. There are political and economical challenges with proton therapy,   . There is also the physics challenge; proton's nature as a particle means it behaves differently than photons. This means that dose and range calculations used for photons are insufficient for protons.\cite{proton_challenges}
 
 Range uncertainties can have a major impact of proton therapy in comparison to \gls{rt}. \autoref{fig: proton_uncertainty} shows a relative dose comparison of photon and proton therapy, and how range uncertainty can affect the treatments. The proton dose is delivered in such a way that the Bragg Peak of the particles is spread out in a bigger area which covers the tumour. This area is called the Spread Out Bragg Peak(SOBP). Most of the photon dose is delivered as the beam enter the tissue, with the dose gradually decreasing as the photons reach the tumour.
 
@@ -120,10 +120,10 @@ First, a measurement of the accuracy of the \gls{pct} was done by performing a \
 \end{figure}
 \FloatBarrier
 
-The test revealed that there was up to a 1\% difference between \gls{rsp} of the \gls{pct} and the ionization chamber. There was an outlier of -4\% difference in the sinus tissue, but this can be caused by the low \gls{rsp} of the tissue along with the uncertainty of the \gls{pct} measurement. The range uncertainty from converting from \gls{hu} to \gls{rsp} has been shown to be at most 3.5\%\cite{Paganetti_2012}. This shows that \gls{pct} yields higher accuracy measurements than a \gls{ct}-scan. 
+The test revealed that there was up to 1\% difference between the \gls{rsp} measured with \gls{pct} and the results from the ionization chamber. There was an outlier of -4\% difference in the sinus tissue, but this can be caused by the low \gls{rsp} of the tissue along with the uncertainty of the \gls{pct} measurement. The range uncertainty from converting from \gls{hu} to \gls{rsp} has been shown to be at most 3.5\%\cite{Paganetti_2012}. This suggests that \gls{pct} yields higher accuracy measurements than a \gls{ct}-scan. 
 
 
-The next test directly compared the \gls{rsp} data between \gls{pct} and \gls{ct}. Result is shown in \autoref{fig: porcine_pct_vs_ct}.
+Another test directly compared the \gls{rsp} data between \gls{pct} and \gls{ct} of the pig's head. The result is shown in \autoref{fig: porcine_pct_vs_ct}.
 
 \begin{figure}[!ht]
     \centering
@@ -133,6 +133,6 @@ The next test directly compared the \gls{rsp} data between \gls{pct} and \gls{ct
 \end{figure}
 \FloatBarrier
 
-The image reveals that there is an agreement between \gls{pct} and \gls{ct} in soft tissue, with a difference at only 2\% between them. Structures such as teeth and bone shows larger discrepancies, up to 30\% difference between the measured \gls{rsp}s. This suggests scans of bone structures benefit more from using \gls{pct}. From this, we can conclude that \gls{pct} shows potential to outperform traditional \gls{ct} when measuring \gls{rsp} in a patient.
+The data reveals that there is an agreement between \gls{pct} and \gls{ct} in soft tissue, with a difference at only 2\% between them. Structures such as teeth and bone shows larger discrepancies, up to 30\% difference between the measured \gls{rsp}s. This suggests scans of bone structures benefit more from using \gls{pct}. From this, we can conclude that \gls{pct} shows potential to outperform traditional \gls{ct} when measuring \gls{rsp} in a patient.
 
 \end{document}

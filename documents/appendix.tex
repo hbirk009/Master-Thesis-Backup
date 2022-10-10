@@ -95,11 +95,11 @@ This section will cover common mistakes and pitfalls while using the software de
 
 \subsection{Bit Error Rate and Masking}
 
-The repository contains 3 tests for testing bit error rate in the transmission from control software to microcontroller, and back. These tests uses the microcontroller \gls{api} class when transmitting data, and the \gls{api} masks the data received, only keeping the data bits. One must disable the masking done in the microcontroller \gls{api} before performing these tests or all bits after bit 15 will turn out erroneous in the tests.
+The repository contains 3 tests for testing bit error rate in the transmission from control software to microcontroller, and back. These tests uses the microcontroller \gls{api} class when transmitting data, and the \gls{api} masks the data received, only keeping the data bits. One must disable the masking done in the microcontroller \gls{api} before performing these tests or the address and RnW bits will always turn out erroneous in the tests.
 
 \subsection{InfluxDB Retention Policy}
 
-The Influx web interface allows for setting the retention policy of the buckets in the database. The retention policy determines how long the database should bookkeep the data points from the monitoring process. There is also an option to not have a retention on the database, meaning it will store data points indefinitely. Storing the data points indefinitely can lead to a storage space problem, where one cannot boot up the server due to memory limits. There is no easy, immediate fix to this, the "easiest" solution found was to re-install InfluxDB. There likely exist command lines that can fix this problem, but we could not find one while trying to fix this issue.
+The Influx web interface allows for setting the retention policy of the buckets in the database. The retention policy determines how long the database should bookkeep the data points from the monitoring process. There is also an option to not have a retention on the database, meaning it will store data points indefinitely. Storing the data points indefinitely can lead to a storage space problem, where one cannot boot up the server due to memory limits. There is no easy, immediate fix to this, I was not able to find a way to delete the data points, the "easiest" solution found was to re-install InfluxDB. There likely exist command lines that can fix this problem, but we could not find one while trying to fix this issue.
 
 To avoid this issue altogether, always make sure that there is a set retention policy for every bucket in InfluxDB. The retention policies can be manually set through the Influx web interface.
 

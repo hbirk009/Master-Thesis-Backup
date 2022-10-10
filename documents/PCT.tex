@@ -1,13 +1,67 @@
 \documentclass[main.tex]{subfiles}
 
 \begin{document}
-\section{PCT Project
-}
+\section{PCT Project}
 \textit{This chapter covers the PCT-project that is currently under development at the Department of Physics and technology in Bergen. It discusses the DTC being developed for the project, how it tracks and measures the energy protons. Finally a technical overview of the system is given, along with how the Power Control System and the control software of this thesis will be implemented.}
 
-The Bergen \gls{pct}-project is a collaboration with the University of Bergen and several other universities and institutions in the world. The purpose is to build a \gls{pct}-scanner to be used in proton treatment. The design is based on using a \acrfull{dtc} to detect protons emitted from the particle accelerator. In particular, the focus is on creating a scanner for use on pediatric patients.
+The Bergen \gls{pct}-project is a collaboration with the University of Bergen and several other universities and institutions in the world. The purpose is to build a \gls{pct}-scanner to be used in proton treatment. The design is based on using a \acrlong{dtc} to detect protons emitted from the particle accelerator. In particular, the focus is on creating a scanner for use on pediatric patients.
 
 \notinmain{start fra toppen av systemet, og så gå ned til sensorene}
+
+\subsection{Introduction}
+
+The \gls{pct}-project is comprised of several control systems and sensors. The main instrument is a \gls{dtc} that uses \gls{alpide}-chips to measure the energy of protons. The \gls{dtc} is made out of 43 layers of \gls{alpide} sensors and there are three control systems that oversee the \gls{dtc}. These systems are: cooling, readout, and power delivery. A simple schematic of the \gls{pct}-system is shown in \autoref{fig: pct_concept}.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=15cm]{images/dcs_concept_renewed.pdf}
+    \caption{Block diagram showing the general concept of the pCT System.}
+    \label{fig: pct_concept}
+\end{figure}
+\FloatBarrier
+
+The cooling system is obviously connected directly to the \gls{dtc}, while power delivery and readout perform their actions through a \gls{tc}. All systems is connected to a network that allows it to communicate with the Control Room, which is located on a computer.
+
+The \gls{pct}-system is still under development, but \autoref{fig: pct_diagram} shows the current implementation of the system.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[scale=0.4]{images/pCT_Current_layout-CurrentSystemOverview.pdf}
+    \caption{Block diagram of the current design of the pCT system. The upper part shows the power delivery and monitoring system, and lower half is the readout unit.}
+    \label{fig: pct_diagram}
+\end{figure}
+\FloatBarrier
+
+
+\subsection{DTC}
+
+The \gls{dtc} is the main instrument of the \gls{pct}-system, it combines proton tracking and energy measurement into one technology. It is made out of 43 layers of pixel detectors, where 2 layers in the rear is used to track the trajectory of the protons and the other 41 measures their energy. A model of it is given in \autoref{fig: DTC_image}.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[scale = 0.5]{images/dtc.jpg}
+    \caption{Model of DTC used in the pCT project. Dimensions of the tracker are (27 cm x 16.6 cm).}
+    \label{fig: DTC_image}
+\end{figure}
+\FloatBarrier
+
+A \gls{dtc} is usually realized with front and rear trackers, but only the rear trackers are used in this prototype. Studies have shown that single-sided proton imaging using Pencil Beam Scanning can lead to similar spatial resolution in the image as compared to double-sided\cite{pbs_result} imaging. the single-sided tracker also comes with a few advantages, such as lower material budget and less complexity in the rigging of the \gls{dtc}.
+
+The layers of \gls{dtc} are functionally identical, but the calorimeter layers are made with aluminum absorbers to fully contain the energy range from the proton beam, which is estimated to be 230 MeV. The tracking layer must have minimum material budget to minimize the scattering of the protons, which can affect the accuracy of the image. The tracking layers are used to track the angle the protons exit the patient, the two layers provides the linear path of the proton and the angle is derived from that. Based on the angle, one can make an estimate of the most likely path taken by the protons as it was moving through the patient. This data is crucial for reconstructing the CT-image.
+
+A layer of the \gls{dtc} is realized using 12 strings of \gls{alpide}-chips. a layer is made out of two half layers, and a half layer is made out of two "slabs of \gls{alpide}-chips. the "slabs" are three strings glued together, a picture of a half layer is shown in \autoref{fig: half_layer}.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[scale = 0.5]{images/half_layer.jpg}
+    \caption{A) Image of half layer, highlighting the various components of the layer. B) side view of a half layer and a full layer\cite{pct_project}}
+    \label{fig: half_layer}
+\end{figure}
+\FloatBarrier
+
+We can note from the figure that the \gls{alpide}-chip only covers about half of the layer, the rest of the space is dedicated to the flex cable. Two half layers are stacked in such a way that the \gls{alpide}-chips of one half layer covers the flex cable of the other, ensuring full area coverage. This gives us a full layer of the \gls{dtc}.
+
+
 \subsection{ALPIDE chips}
 
 The basic pixel detector sensor used for this project is the \gls{alpide}-chips that were designed for the upgrade of the \gls{its} during the long shutdown of the \gls{lhc} during the 2019-2020 period. The chips is categorized as \gls{maps} with a span of 1.5 cm x 3 cm. The sensor is made out of a matrix of 512 x 1024 pixels and they function as binary hit/no hit sensors. A detection threshold is set for the chip, suppressing all hits that are below the threshold level, functioning as data compression for non-relevant data, such as from noise and radiation. A cross section of the \gls{alpide} sillcon is shown in \autoref{fig: alpide_cross}.
@@ -35,109 +89,51 @@ In the \gls{pct} project, nine \gls{alpide}-chips are bonded together on one fle
 
 From the figure we can see that half of the string is covered by the chip itself, and the other half is the flex cable the chips are mounted to.
 
-\subsection{DTC}
+For this thesis, it is also relevant to look at the power consumption of the strings. The \gls{alpide}-chips do not all draw the same amount of current, it is therefore necessary to measure the current draw of the strings. A test was performed on a string at UiB and it was recorded to draw 880 mA of digital current, and, a maximum analog current of 200 mA is also expected. Taking this into account, each string requires 1.9V and 1.1A to operate. 
 
-The \gls{dtc} is distinct in that it combines proton tracking and energy measurement into one technology. It is made out of 43 layers of pixel detectors, where 2 layers in the rear is used to track the trajectory of the protons and the other 41 measures their energy. A model of it is given in \autoref{fig: DTC_image}.
 
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[scale = 0.5]{images/dtc.jpg}
-    \caption{Model of DTC used in the pCT project. Dimensions of the tracker are (27 cm x 16.6 cm).}
-    \label{fig: DTC_image}
-\end{figure}
-\FloatBarrier
+\subsection{Cooling System}
 
-A \gls{dtc} is usually realized with front and rear trackers, but only the rear trackers are used in this prototype. Studies have shown that single-sided proton imaging using \gls{pbs} can lead to similar spatial resolution in the image as compared to double-sided\cite{pbs_result}. the single-sided tracker also comes with a few advantages, such as lower material budget and less complexity in the rigging of the \gls{dtc}.
+The cooling system consists of two parts, one for the front tracking layers, and one for the calorimeter layers. The front tracking layers is cooled using liquid, while the calorimeter layers is cooled using five fans. Figure ?? shows the current implementation of the cooling system.
 
-The layers of \gls{dtc} are functionally identical, but the calorimeter layers are made with aluminum absorbers to fully contain the energy range from the proton beam, which is estimated to be 230 MeV. The tracking layer must have minimum material budget to minimize the scattering of the protons, which can affect the accuracy of the image. The tracking layers are used to track the angle the protons exit the patient, the two layers provides the linear path of the proton and the angle is derived from that. Based on the angle, one can make an estimate of the most likely path taken by the protons as it was moving through the patient. This data is crucial for reconstructing the CT-image.
+\notinmain{bilde av cooling system her}
 
-A layer of the \gls{dtc} is realized using 12 strings of \gls{alpide}-chips. a layer is made out of two half layers, and a half layer is made out of two "slabs of \gls{alpide}-chips. the "slabs" are three strings glued together, a picture of a half layer is shown in \autoref{fig: half_layer}.
+The control of the cooling is done through maxz? cards, which is connected to the Control Room. The cooling system is monitored with four temperature sensors, two flow meters, and it can additionally monitor the RPM of the five fans. The control system for the cooling is still under development, currently it is only able to read out values from the sensors.
+
+
+\subsection{Readout System}
+
+The \gls{pct} readout system is comprised of 43 readout units, which acts as the communication hub between the Control Room and the sensors. Each layer has a corresponding \gls{pru}, which controls the sensors, as well as managing the data streams. The \gls{pru} board is realized using an Kintex Ultrascale KU085 \gls{fpga}, and the board is connected to the \gls{tc} using 12 Samtec FireFly cables. A block diagram of the board is shown in \autoref{fig: pru_diagram}.
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[scale = 0.5]{images/half_layer.jpg}
-    \caption{A) Image of half layer, highlighting the various components of the layer. B) side view of a half layer and a full layer\cite{pct_project}}
-    \label{fig: half_layer}
+    \includegraphics[scale=0.5]{images/pru_diagram.png}
+    \caption{Simplified block diagram of the pRU board\cite{ola}}
+    \label{fig: pru_diagram}
 \end{figure}
 \FloatBarrier
 
-We can note from the figure that the \gls{alpide}-chip only covers about half of the layer, the rest of the space is dedicated to the flex cable. Two half layers are stacked in such a way that the \gls{alpide}chips of one half layer covers the flex cable of the other, ensuring full area coverage, giving us a full layer of the \gls{dtc}.
+There is no monitoring system in place for the \gls{pru}, but a configuration system exists, which can store configuration values in a database and configure the strings. But this system is specialized, and will most likely require a new revision, to integrate with the rest of the \gls{pct}-system.
 
-\subsection{Detector Control System}
+\subsection{Power Delivery System}
 
-The \gls{dcs} of the \gls{dtc} is still under development. The \gls{dcs} is made of two parts: control of readout and control of power delivery. The readout electronics retrieve the pixel hit data from the \gls{alpide}s, while the power delivery is responsible for delivering power to the strings and monitor their current consumption. A block diagram showing the concept for the \gls{dcs} is shown in \autoref{fig: dcs_concept}.
+The power delivery system is responsible for powering the strings on the \gls{dtc}, and also monitor the performance of the strings. \autoref{fig: pds_diagram} outlines a detailed block diagram of the system.
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[width=15cm]{images/dcs_concept_renewed.pdf}
-    \caption{Block diagram showing the general concept of the DCS.}
-    \label{fig: dcs_concept}
+    \includegraphics[scale=0.5]{images/pds_detail.pdf}
+    \caption{Detailed block diagram of the power delivery system.}
+    \label{fig: pds_diagram}
 \end{figure}
 \FloatBarrier
 
-Control software sends and retrieves data to the power delivery system and readout unit through a network, and the units relays power and data to the \gls{tc} that is connected to the sensors. The "Network" is the connection between the units and the control software, Ethernet cables are used for communication and IPbus communication protocol is used to establish an interface. The IPbus interface is built using an \gls{fpga} and as such, each unit uses its own \gls{fpga} to handle communication. The current implementation of these two systems is shown in \autoref{fig: dcs_diagram}
+Control of the system is done through the Control Room, which uses the MB Hub to interface with the \acrlong{mb}s. The \gls{mb} delivers power from the PSU to the \gls{tc}. It also monitors the temperature and current usage of the strings. A string is turned off by the \acrlong{mb} if it exceeds the current/temperature threshold level. This ensures that the strings is turned off quickly, to not damage the chips. The \gls{mb}s deliver 3.3V to each \gls{tc}, which uses linear voltage regulators to shift the level down to 1.9V before delivering it to the strings.
 
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[scale=0.4]{images/pCT_Current_layout-CurrentSystemOverview.pdf}
-    \caption{Block diagram of the current design of the DCS. The upper part shows the power delivery and monitoring system, and lower half is the readout unit.}
-    \label{fig: dcs_diagram}
-\end{figure}
-\FloatBarrier
+The control system of the power delivery is discussed in \autoref{section: pcs}, where the focus is on the communication chain between the Control Room and the \acrlong{mb}s.
 
-From the upper half of \autoref{fig: dcs_diagram}, the power delivery system is realized with 43 monitor boards, delivering power to the \gls{tc}s, and monitor of these boards are handled by an \gls{fpga} that is connected to the control software.
-
-In a similar manner the bottom half of the figure showcases the 43 readout units in charge of sending and retrieving data to and from the \gls{alpide}-chips. The readout units along with control software in the control room encompasses the control system for the readout electronics. The \gls{mb} and readout units will be connected to the \gls{tc}s through 3 metres of Firefly-cables 
-
-Another aspect to be considered in the \gls{dcs} is the radiation the various components are exposed to. The radiation from the proton therapy can have an adverse effect on circuitry and hardware. From \autoref{fig: dcs_diagram}, it is estimated that the \gls{tc} will be in the high radiation zone due to having to be close to the actual sensors, while the readout units and \gls{mb} will have minimal exposure to radiation, due to being separated by at least 3 metres of Firefly cables. This means that it is not necessary to accommodate more than the usual radiation protection for components involved in the power control and readout systems.
+\notinmain{Vet ikke hvor denne skal gå: Another aspect to be considered in the \gls{dcs} is the radiation the various components are exposed to. The radiation from the proton therapy can have an adverse effect on circuitry and hardware. From \autoref{fig: dcs_diagram}, it is estimated that the \gls{tc} will be in the high radiation zone due to having to be close to the actual sensors, while the readout units and \gls{mb} will have minimal exposure to radiation, due to being separated by at least 3 metres of Firefly cables. Therefore it is not necessary to accommodate extra radiation protection for components involved in the power control and readout systems.}
 
 
-\subsection{Control Systems}
 
-The Readout units and the power supply board both require a software end point that essentially controls the entire system. This entails creating a system that can setup and configure the various parts of the system and also monitoring the system and report errors, i.e. we need to create a monitoring and configuration system.
-
-A control system generally is made out of sensors, a controller to control and retrieve data from the sensors, a supervisory computer that manages the process for the sensors, and \gls{hmi} software. The \gls{hmi} software provides access to the data from the sensors to the user and if needed, also allow the user to modify and processes in the system.
-
-
-\subsubsection{SCADA systems}
-There are various control systems that have been made over the years in industries such as oil and gas, chemical manufacturing and fabrication. The most common type of control systems in industrial settings is \gls{scada}. \gls{scada} systems have four main functions: data collection, network data communication, data presentation, and remote monitoring and supervisory control\cite{scada_intro}. Although today, many control systems is based on \gls{iot}, which has a similar architecture, but \gls{iot} bases itself on utilizing cloud-networking and processing for its communication infrastructure. Due to lack of wireless communication in the \gls{pct}-project, focus will be on how \gls{scada} systems are developed and what that means for the project.
-
-A \gls{scada} system typically is made out of five components:
-
-\begin{itemize}
-    \item Field devices and signals
-    \item \acrfull{ppc}
-    \item \acrfull{hmi}
-    \item Database servers
-    \item Communication infrastructure
-\end{itemize}
-
-Field devices and signals encompasses all sensors and the actuators that controls them. For \gls{pct}, this includes the \gls{alpide}-chips, temperature and power measurement, and cooling. \gls{ppc} is responsible for automatically controlling the field devices, as well as retrieving data from them and send it to the \gls{hmi}. \gls{hmi} is the software being executed on the main computer and is made of a user interface and database manager. The database server usually contains configuration and monitoring data from the field devices, and the communication infrastructure used in \gls{scada} systems is usually ethernet based.
-
-\subsubsection{Communication network}
-There are various communication networks that can be used in a \gls{scada}-system, since all data from the sensors in the \gls{pct} project comes from IPbus, it makes sense for one master computer to receive the data from the IPbus and process it, or send to other computers for processing. (McCrady, 2013) describes in his book of such a communication topology\cite{scada_design}. An example of a \textit{star} topology is shown in \autoref{fig: scada_star}.
-
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[scale=0.6]{images/scada_topology.png}
-    \caption{Example of a star topology communication infrastructure used for SCADA systems\cite{scada_design}}
-    \label{fig: scada_star}
-\end{figure}
-\FloatBarrier
-
-In the \gls{pct}-project, the main computer can be connected to readout, power delivery, and cooling, leading to a \textit{star} topology, even if no other computers are connected.
-
-\subsubsection{I/O Signals}
-
-Important in a \gls{scada} system is to identify all signals to be used and retrieved by the field devices. Knowing all signals to be used in a system will give us an estimate of the requirements of the system as well as aid in the development process.
-
-Power delivery uses a microcontroller to manage power output as well as temperature of the sensors. The microcontroller measures analog voltage(AVDD), digital voltage(DVDD), PWELL voltage, and the temperature of strings. It also have two register for each measurement that dictates the threshold levels, which will make the microcontroller turn off the power if these levels are exceeded. if we include monitoring an error register, and configuring enable signals for the strings, it will then result in 8 input/configuration signals and 8 output/monitoring signals.
-
-\notinmain{Skriv meir om readout og cooling I/O signaler her, ha med ein tabell og kanskje}
-
-\subsubsection{Software documentation}
-Another important aspect of such a control system is having a consistent programming standard and complete software documentation. \gls{scada} and similar systems often have a long shelf time, and a well documented system will make maintenance and work in the future be much easier. In general, starting with good software documentation and expanding upon it during the project development will lead to sufficient documentation of the entire system.
-
-A consistent programming standard helps in debugging and in expanding functionality of the system. \gls{oop} is a very common programming paradigm that is used to give structure to programs and increase reusability and maintainability of the code. Systems designed to manage large data acquisition, such as a \gls{pet}-scan system, have in the past used \gls{oop} to design and manage large programs\cite{pet_control_system}, this suggest that this programming structure is viable for the design of the control system in the \gls{pct}-project.
 
 \end{document}

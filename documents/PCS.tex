@@ -3,34 +3,42 @@
 \begin{document}
 
 \section{Power Control System}
+\label{section: pcs}
+\textit{This section describes the \acrlong{pcs}, how it is constructed and how it functions. It goes into detail on the three parts that make up the \gls{pcs}, which is the control software, the MB Hub and the \gls{mb}. It additionally describes the IPbus communication protocol, and how it is implemented in the control software.}
 
-\textit{This section will go over the \gls{pcs}, how it is constructed and describe how it functions. It will go into detail on the three parts that make up the \gls{pcs}, which is client software, \gls{fpga} and \gls{mb}. The focus will be on how the \gls{fpga} and microcontroller interfaces relates to the client software.}
-
-The \acrfull{pcs} is the name of the modules responsible for powering the strings in the \gls{dtc}, monitor and control their temperature and power usage. The system is made of three parts, the client software on the computer, an \gls{fpga} translation layer using IPbus firmware, and a \acrlong{mb} with a microcontroller. The \gls{mb} delivers the power to the strings and also measures and monitors the strings temperature and current usage. The\gls{mb} design and microcontroller software was developed by Birger Olsen. The \gls{fpga} is a translation layer between the client software and \gls{mb}s, it uses IPbus firmware to safely and reliably transmit data packets from software to \gls{mb}. A single \gls{fpga} is used to transmit data to all 43 \gls{mb}s, meaning it must have the architecture to process data packets for every board. The \gls{fpga} design is made by Martin Eggen and Jakob Hauser. The software on the computer is the monitoring and configuration system, responsible for configuring the \gls{mb}s through the \gls{fpga} and monitor the strings, giving the user information on the performance of the strings. This control system on the software side will be discussed more in \autoref{section: monitoring} and \autoref{section: configuration}. A figure of the \gls{pcs} is shown in \autoref{fig: PCS_overview}.  \notinmain{sett bachelorgutta sitt bilde av pcs her og ta denne figuren inn i client software kapittelet istedenfor}
+The \gls{pcs} is the name of the system that delivers power to the strings, and monitors their performance. The system is made of three parts, the control software on the computer, the MB Hub, which is implemented on an \gls{fpga}, and a \acrlong{mb} with a microcontroller. The \gls{mb} delivers the power to the strings and also measures and monitors the strings temperature and current consumption. The\gls{mb} design and microcontroller software was developed by Birger Olsen. The MB Hub is a translation layer between the control software and \gls{mb}s, it uses IPbus firmware to safely and reliably transmit data packets from software to \gls{mb}. A single \gls{fpga} is used to transmit data to all 43 \gls{mb}s, meaning it must have the architecture to process data packets for every board. The \gls{fpga} design is made by Martin Eggen and Jakob Hauser. The control software is comprised of a monitoring and configuration system, responsible for configuring the \gls{mb}s through the \gls{fpga} and also monitor the strings temperature and current consumption. This control system on the software side will be discussed more in \autoref{section: configuration} and \autoref{section: monitoring}. A figure of the \gls{pcs} is shown in \autoref{fig: PCS_overview}.
 
 \begin{figure}[!htpb]
     \centering
     \includegraphics[width=15cm]{images/PowerDeliverySystemOverview.png}
-    \caption{Overview of the PCS components.}
+    \caption{Overview of the PCS components. Note that the connection between the evaluation board and the \gls{mb}s is through USART. The \gls{mb}s delivers power to the sensors through a 7 pin connector\cite{gutta}}
     \label{fig: PCS_overview}
 \end{figure}
 \FloatBarrier
 
-The "Control room" is the computer with the IPbus software that can communicate with the \gls{fpga} in this instance. The "control room" will both handle the \gls{pcs} and the readout of the ALPIDE-chips. We currently have a prototype implementation of the \gls{pcs}, with software for communication, connected to the KCU105 evaluation board. The \gls{mb} is still in development, so a Curiosity Nano development kit was used to verify the connection between the KCU105 and microcontroller software. An image of this setup is shown in Figure ??.
+The "Control Room" is the computer with the IPbus software that can communicate with the MB Hub in this instance. The "Control Room" will handle both the \gls{pcs} and the control of readout of the ALPIDE-chips. We currently have a prototype implementation of the \gls{pcs}, with software for communication, connected to the KCU105 evaluation board. The \gls{mb} is still in development, so a Curiosity Nano development kit was used to verify the connection between the KCU105 and microcontroller software. An image of this setup is shown in \autoref{fig: pcs_proto}.
+
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=15cm]{images/pcs_setup.jpg}
+    \caption{Image of the prototype of the PCS communication chain.}
+    \label{fig: pcs_proto}
+\end{figure}
+\FloatBarrier
 
 
-There is obviously no connection between the microcontroller and the \gls{dtc} yet, and there is only one layer connected, but it still allows us to do performance tests that will give us good estimations of the final product.
+There is obviously no connection between the microcontroller and the \gls{dtc} yet, and there is only one "layer" connected, however it still allows us to do performance tests that will give us reasonable estimations of the final product.
 
-This chapter will go over the different design approaches for each part of the \gls{pcs}, going over the requirements for the system and how it is implemented.
+This chapter describes the different design approaches for each part of the \gls{pcs}, with the focus on the requirements for the system and how it is implemented.
 
-\subsection{Client Software}
+\subsection{control software}
 
-The client software is made of a monitoring system, a configuration system and an IPbus \gls{api}. The configuration system performs the necessary steps to power on the strings in a quick and safe manner, and also configures the microcontroller on the \gls{mb}. The monitoring system retrieves the monitoring data from the microcontroller, to the databases on client side and displays this data to the user in a easy to understand manner. An overview of the \gls{pcs}, with emphasise on the client software is shown in \autoref{fig: software_overview}.
+The control software is comprised of a monitoring system, a configuration system, and an IPbus \gls{api}. The configuration system performs the necessary steps to power on the strings quickly and safely, and it configures the microcontroller on the \gls{mb}. The monitoring system retrieves the monitoring data from the microcontroller and stores the data in the databases on the client side. Finally, it displays the data to the user in an easy-to-understand manner. An overview of the \gls{pcs}, emphasizing the control software, is shown in \autoref{fig: software_overview}.
 
 \begin{figure}[!htpb]
     \centering
     \includegraphics[width=15cm]{images/PCS overview.pdf}
-    \caption{Overview of the PCS, emphasising the client software.}
+    \caption{Overview of the PCS, emphasising the control software.}
     \label{fig: software_overview}
 \end{figure}
 \FloatBarrier
@@ -39,9 +47,9 @@ The client software is made of a monitoring system, a configuration system and a
 
 The microcontroller on the \gls{mb} already directly monitors the strings, and turns them off if the threshold values is exceeded, but it is still important to display this information to the user, or else it would be next to impossible to troubleshoot and debug the strings.
 
-\autoref{fig: software_overview} shows the client software in detail. The configuration system and monitoring system is made of custom python classes that uses the IPbus API to communicate with the ControlHub, which in turn communicates with the \gls{fpga} over Ethernet cable. The figure also shows the databases the two systems uses to store data, MongoDB stores configuration sets and InfluxDB + Grafana stores monitoring data and displays it to the user. These two systems will be discussed further in \autoref{section: configuration} and \autoref{section: monitoring}.
+\autoref{fig: software_overview} shows the control software in detail. The configuration system and monitoring system is made of custom python classes that uses the IPbus API to communicate with the ControlHub, which in turn communicates with the MB Hub over Ethernet cable. The figure also shows the databases the two systems uses to store data, MongoDB stores configuration sets and InfluxDB + Grafana stores monitoring data and displays it to the user. These two systems will be discussed further in \autoref{section: configuration} and \autoref{section: monitoring}.
 
-The client software functions as the "brain" of the \gls{pcs}, the \gls{fpga} and microcontroller on the \gls{mb} is simple by design and more complicated processes is meant to be performed by the software. Processes such as debugging for faulty strings or transmission tests, is created on the software side. Testing and verification of the \gls{pcs} is discussed in section ??.
+The control software functions as the "brain" of the \gls{pcs}, the \gls{fpga} and microcontroller on the \gls{mb} is simple by design and more complicated processes is meant to be performed by the software. Processes such as debugging for faulty strings or transmission tests, is created on the software side. Testing and verification of the \gls{pcs} is discussed in \autoref{ssec: test_setup}.
  
 
 Both the monitoring and configuration systems uses \gls{gui}s to interface with the user, but there is additionally a top-level \gls{gui} that unifies both systems. An image of the top level \gls{gui} is shown in \autoref{fig: main_gui}
@@ -54,12 +62,13 @@ Both the monitoring and configuration systems uses \gls{gui}s to interface with 
 \end{figure}
 \FloatBarrier 
 
-The main hub \gls{gui} serves as the top level for the control software, this means the user will boot up the \gls{gui} and can access all functionalities of the control software. This includes setting and creating configuration sets using the configuration \gls{gui}, starting and stopping the monitoring process, opening the Grafana web tool, and finally start the configuration and powering algorithm.
+The main hub \gls{gui} serves as the top level for the control software, this means the user can start the \gls{gui} and access all functionalities of the control software. This includes setting and creating configuration sets using the configuration \gls{gui}, starting and stopping the monitoring process, opening the Grafana web tool, and finally start the configuration and powering algorithm.
 
-The main hub \gls{gui} has buttons that will open up the configuring and monitoring \gls{gui}s, respectively, and also has a button that will initiate the configuration process. The window also has a logging window to display status and actions performed to the user.
+The main hub \gls{gui} has buttons that will open up the configuring and monitoring \gls{gui}s respectively, and also has a button that will initiate the configuration process. Additionally the window has a logging window to display status and actions performed to the user.
 
 
 \subsection{IPbus}
+\label{ssec: IPbus}
  \subsubsection{Overview}
  
  IPbus is a simple, packet based control protocol for reading and modifying registers on an \gls{fpga} using an ethernet connection. It is designed to be a high performance control link for particle physics electronics, particularly, it is used in the \gls{lhc} experiments at CERN.
@@ -95,13 +104,13 @@ The Ipbus software uses XML-files to store address map of modules on the \gls{fp
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[scale=0.65]{images/com_module_xml.png}
+    \includegraphics[scale=0.65, width = 15cm]{images/com_module_xml.png}
     \caption{XML file of the com\_module used within IPbus software.}
     \label{fig: xml_example}
 \end{figure}
 \FloatBarrier
 
-The files contain information of each register, such as address, \gls{rnw} access, and a description. IPbus XML-files supports additional functions which is described in the IPbus user guide\cite{ipbus_guide}, but for this project, such functionality is not needed and therefore not used.
+The files contain information of each register, such as address, \gls{rnw} access, and a description. IPbus XML-files supports additional functions, like masking bits, or writing to a memory block,  which is described in the IPbus user guide\cite{ipbus_guide}, but for this project, such functionality is not necessary.
 
 The $\mu$HAL Python library is vast, but for the end user there is only three classes which is important:
 
@@ -126,21 +135,21 @@ A read or write is performed by retrieving the node for a register and issuing a
 The conclusion from this is that we must design the control software around limiting dispatches so that we can fully utilize the IPbus throughput and ensure that our system is quick and responsive. \autoref{ssec: mcu_api} discusses how the \gls{api} for the \gls{fpga} is designed to allow for sending multiple data packets in one transmission.
 
 
-\subsection{FPGA Design}
+\subsection{MB Hub}
 \label{section: fpga_design}
 \notinmain{rewrite this paragraph since IPbus is in its own chapter}
-A communication link between the client software and the \gls{mb} is a necessary part of the \gls{pcs}. A previous paper done for the \gls{pct}-project discussed different design architectures for the \gls{dcs}, which encompasses both chip readout and the \gls{pcs}\cite{ola}. A microcontroller based architecture were considered, but it was proven to be too large of a bottleneck in the system. A pure \gls{fpga} architecture was seen as the superior design for the system. The main advantage of using an \gls{fpga}-architecture is the use of IPbus, an Ethernet-based protocol standard. IPbus is designed to read and modify registers within an \gls{fpga} through a communication protocol over ethernet cable, making it suitable for our use.  IPbus was designed to be used in particle physics experiment and is therefore reliable, scalable, and faster than other solutions when sending large amounts of data packets.
+A communication link between the control software and the \gls{mb} is a necessary part of the \gls{pcs}. A previous paper done for the \gls{pct}-project discussed different design architectures for the \gls{dcs}, which encompasses both chip readout and the \gls{pcs}\cite{ola}. A microcontroller based architecture were considered, but it was proven to be too large of a bottleneck in the system. A pure \gls{fpga} architecture was seen as the superior design for the system. One of the advantages of using an \gls{fpga}-architecture is the use of IPbus, an Ethernet-based protocol standard. IPbus is designed to read and modify registers within an \gls{fpga} through a communication protocol over ethernet cable, making it suitable for our use.
 
 An \gls{fpga} must be chosen to be used in the \gls{pcs} and there are certain criteria the \gls{fpga} must meet for this project:
 
 \begin{itemize}
     \item It must have 2*2*43 I/O pins, for communicating with all 43 layers, using \acrshort{lvds}.
-    \item \gls{fpga} must be relatively new and still updated, so it will not become obsolete in the coming years.
+    \item The \gls{fpga} must be relatively new and still updated, so it will not become obsolete in the coming years.
     \item It must not be too expensive, although this is not a hard requirement, due to only needing one \gls{fpga} for the entire system.
     \item The \gls{fpga} should have an example design for IBbus available, this will cut the development time for the \gls{fpga} design by a large margin.
 \end{itemize}
 
-For this project, it was chosen to use the Xilinx Kintex UltraScale KCU105, for meeting all the demands for number of I/O pins and having an example IPbus design available provided by the developers of IPbus.
+For this project, we chose to use the Xilinx Kintex UltraScale KCU105 to meet all the demands for the number of I/O pins and have an example IPbus design available provided by the developers of IPbus.
 
 
 The \gls{fpga} will be responsible for communicating with the \gls{mb} for each layer. It needs to be able to handle individual read and write for each layer and also have global functions, for broadcasting messages. It will also need to be able to handle errors in case something goes wrong on any of the \gls{mb}s. Several designs were considered for the \gls{fpga}.
@@ -155,12 +164,15 @@ These address maps is set in the IPbus module files. Each module on the \gls{fpg
 \begin{figure}[!htpb]
     \centering
     \includegraphics[width=13cm, scale=1]{images/BlockDiagramFPGA.png}
-    \caption{Block diagram of the FPGA design. Note that "PCU" is meant to be the MB in the diagram.}
+    \caption{Block diagram of the MB Hub FPGA design. Note that "PCU" is meant to be the MB in the diagram\cite{gutta}}
     \label{fig: fpga_block}
 \end{figure}
 \FloatBarrier
 
-This design has a "com\_module" for each layer that handles write and read transactions to and from the microcontroller using a standard USART protocol. These modules also uses a \gls{fifo} to allow for many data packets to be sent at once, without needing to wait for the module to finish the transmission. The global module has several functions for not only broadcasting, but also can configure universal settings in the \gls{fpga}, such as "global reset" function or setting the baud rate for the \gls{usart}. The global module also contains two registers for enabling and disabling the com\_modules, which will be relevant when we are creating the powering algorithm for the configuration process in \autoref{section: configuration}.
+This design has a "com\_module" for each layer that handles write and read transactions to and from the microcontroller using a standard \gls{usart} protocol. These modules also uses a \gls{fifo} to allow for many data packets to be sent at once, without needing to wait for the module to finish the transmission.
+
+The global module has several functions for configuring and transmitting data within the MB Hub. The global module has registers that define the system clock on the board, the baud rate used, and a global reset of the com\_modules. One of the crucial features of the module is the broadcast functionality. Writing instructions to all 43 com\_modules is repetitive and takes more time to perform; the broadcast function solves this by simply writing one message to the broadcast TX register, which will write the same message to the TX register of each com\_module. This feature is utilized in the configuration and monitoring processes to speed them up. Finally, the global module contains an enable register for the com\_modules on the \gls{fpga}. The enable register allows us to turn off com\_modules that are not in use, which helps reduce the amount of redundant data retrieved by the control software.
+
 
 Interfacing with the \gls{fpga} design requires us to know the operations performed by the \gls{fpga} when reading or writing to the microcontroller. When a data packet is sent to the TX register of a com\_module, the \gls{fpga} will send it down to the microcontroller and information from the transaction is always sent to the respective RX register. \autoref{fig: handshake_vals} shows the data flow during a read and a write between the \gls{fpga} and microcontroller.
 
@@ -180,7 +192,7 @@ All data written to the TX register of a com\_module is sent down to the microco
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[width=18cm, scale=1]{images/MasterInitRead.png}
+    \includegraphics[width=15cm, scale=1]{images/MasterInitRead.png}
     \caption{Timing diagram of Master initializing communication with slave using USART.}
     \label{fig: master_init}
 \end{figure}
@@ -188,7 +200,7 @@ All data written to the TX register of a com\_module is sent down to the microco
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[width=18cm, scale=1]{images/MasterSendData-eps-converted-to.pdf}
+    \includegraphics[width=15cm, scale=1]{images/MasterSendData-eps-converted-to.pdf}
     \caption{Timing diagram of Master sending 16 bit data through two packets.}
     \label{fig: master_send}
 \end{figure}
@@ -196,20 +208,20 @@ All data written to the TX register of a com\_module is sent down to the microco
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[width=18cm, scale=1]{images/SlaveRespondRead-eps-converted-to.pdf}
+    \includegraphics[width=15cm, scale=1]{images/SlaveRespondRead-eps-converted-to.pdf}
     \caption{Timing diagram of Slave sending data after read request.}
     \label{fig: slave_read}
 \end{figure}
 \FloatBarrier
 
-The master initiates an operation with a start bit and subsequently sends the address value and the RnW bit. The slave performs a handshake by sending the received address back to the \gls{fpga}. The data is always sent with two packets of 8 bits, starting with the high bits and then the low bits. This is done due to the limitations of the microcontroller only having 8 bits per register. \notinmain{legg til bilde av oscilloskop usart kommunikasjon her}.
+The master initiates an operation with a start bit and subsequently sends the address value and the RnW bit. The slave performs a handshake by sending the received address back to the \gls{fpga}. The data is always sent with two packets of 8 bits, starting with the high bits and then the low bits. This is done due to the limitations of the microcontroller only having 8 bits per register. \notinmain{legg til bilde av oscilloskop usart kommunikasjon her}
 
 
 \notinmain{skriv om data header og hvordan den blir lest, eventuelt skriv om busy signal?}
 
 \subsection{Monitoring Board}
 \label{ssec: microcontroller}
-The \acrlong{mb} is the board responsible for distributing current to the strings, as well as directly monitoring their current usage and temperature. The board and microcontroller software was developed by Birger Olsen at the same time as this thesis was written. We will not go into detail of the board itself, rather we will focus on the microcontroller software, which the client software will communicate with through the \gls{fpga} translation layer. The board uses an INA3221 chip to deliver DVDD, AVDD, and PWELL current to the strings, and it measures temperature of the strings from a PT100 element.
+The \acrlong{mb} is the board responsible for distributing power to the strings, as well as directly monitoring their voltage levels, current consumption and temperature. The board and microcontroller software was developed by Birger Olsen at the same time as this thesis was written. This section focuses on the microcontroller software and how it interacts with the MB Hub. The board delivers DVDD, AVDD, and PWELL current to the strings. Additionally, the board measures the current consumption, voltage levels and the temperature of the strings. \autoref{fig: mb_schematic} shows a simplified block schematic of the board.
 
 \notinmain{source birger for bildet}
 \begin{figure}[!htpb]
@@ -220,11 +232,11 @@ The \acrlong{mb} is the board responsible for distributing current to the string
 \end{figure}
 \FloatBarrier
 
-The system on the \gls{mb} is controlled by an AVR128DB48 microcontroller, which features a \gls{dac}, an \gls{adc}, I$^2$C and \gls{usart} modules. The AVR128DB also features a  system clock with default speed 4 MHz, but can go up to 24 MHz if needed. As mentioned in \autoref{section: fpga_design}, \acrshort{usart} will be used for communication between \gls{fpga} and microcontroller.
+ An INA3221 chip measures the current consumption of the strings, and the temperature is measured through a PT1000 element. The system on the \gls{mb} is controlled by an AVR128DB48 microcontroller. As mentioned in \autoref{section: fpga_design}, \acrshort{usart} is currently used for communication between the MB Hub and the microcontroller.
 
-The register map for the microcontroller is given in Appendix \ref{appendix: register_map}. Each register is 8 bit, but the data from the PT100 and INA3221 chip uses 16 bits, therefore each address map uses 2 registers to store the data. The address map consists of threshold level registers, general purpose registers, control registers, and error handling registers.
+The register map for the microcontroller is given in Appendix \ref{appendix: register_map}. The address map consists of threshold level registers, general purpose registers, control registers, and error handling registers. The registers on the microcontroller is by default 16 bit.
 
-The data header used to communicate between the \gls{fpga} and microcontroller is 32 bits long, and is made of RnW bit, address, and data to write. The data header is shown in \autoref{fig: tx_header}.
+The data header used to communicate between the MB Hub and microcontroller is 32 bits long, and is made of RnW bit, address, and data to write. The data header is shown in \autoref{fig: tx_header}.
 
 \begin{figure}[!htpb]
     \centering
@@ -234,17 +246,11 @@ The data header used to communicate between the \gls{fpga} and microcontroller i
 \end{figure}
 \FloatBarrier
 
-The data bits only have a function during a write operation, during a read, the first 16 bits is not used.
+The data bits only have a function during a write operation, during a read request, the 16 least significant bits is not used.
 
-each measurement has two threshold levels, a warning level and an error level. The client software must set these threshold registers when booting up the the strings. The microcontroller will only set an error message if the warning threshold is surpassed by the strings, but it will immediately turn off the strings if the second threshold level is surpassed. When either of the threshold levels is triggered, an error message is sent to the error message register and the error count register is updated.
+The board measures DVDD, AVDD, PWELL, and temperature, and the microcontroller has threshold registers for each of these measurements. The microcontroller will turn off the strings if the measurements exceed these thresholds. Setting up these registers with appropriate values is a part of the configuration procedure, which is discussed more in \autoref{section: configuration}.
 
-Checking for errors in the \gls{mb} while monitoring or configuring can be done by reading the error count register in intervals. If an error is detected, then the error messages should be read out by the client software and the error registers can be cleared by writing 0x00 to the error count register.
-
-The microcontroller has 3 control registers, which allows client software to execute custom functions built into the microcontroller, by writing to the registers. This would allow us to perform relatively complex functions, without needing to transmit many data packets through the \gls{pcs}. Functions such as an individual enable scan, which tests the current usage of each individual string, could be performed significantly faster with the use of a custom function on the microcontroller, for example. The control register feature is only in a conceptual state and it has not been fully implemented in the current microcontroller design. CTRL1 register only has a few functions for resetting register values implemented, CTRL2 and CTRL3 is currently unused and has no function.
-
-Functions such as error handling in the control software is not implemented due to the error handling in the 
-
-
+The microcontroller has three control registers; writing to the registers allows control software to execute custom functions built into the microcontroller. This would allow us to perform relatively complex functions without transmitting many data packets through the \gls{pcs}. Functions such as checking for abnormal current consumption in the strings could be performed significantly faster with a custom function on the microcontroller. The control register feature is only in a conceptual state, and it has not been fully implemented in the current microcontroller design. CTRL1 register only has a few functions for resetting register values implemented; CTRL2 and CTRL3 are reserved for future use.
 
 
 \notinmain{Skriv om mikrokontroller oppsett, software funksjoner, data header, register map}
