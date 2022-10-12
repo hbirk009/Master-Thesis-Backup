@@ -3,13 +3,16 @@
 \usepackage{preamble}
 \usepackage{subfiles}
 
+
 \title{Design of Configuration and Monitoring System for the Power Supply in ProtonCT Project.}
 \author{Håvard Birkenes}
 \date{February 2022}
 
 \begin{document}
+
 \renewcommand{\notinmain}[1]{}
     \maketitle
+    \thispagestyle{empty}
     \begin{center}
         \includegraphics[width=8cm]{images/UiB-emblem_gray.pdf}
     \end{center}
@@ -19,11 +22,13 @@
    %\newpage
   % \subfile{documents/abstract.tex}
     \newpage
+    \pagenumbering{roman}
     \tableofcontents
     \newpage
     \printglossary
     \printglossary[type=\acronymtype]
     \newpage
+    \pagenumbering{arabic}
     \subfile{documents/introduction.tex}
     \newpage
 

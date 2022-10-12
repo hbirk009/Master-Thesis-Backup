@@ -253,6 +253,10 @@ The board measures DVDD, AVDD, PWELL, and temperature, and the microcontroller h
 The microcontroller has three control registers; writing to the registers allows control software to execute custom functions built into the microcontroller. This would allow us to perform relatively complex functions without transmitting many data packets through the \gls{pcs}. Functions such as checking for abnormal current consumption in the strings could be performed significantly faster with a custom function on the microcontroller. The control register feature is only in a conceptual state, and it has not been fully implemented in the current microcontroller design. CTRL1 register only has a few functions for resetting register values implemented; CTRL2 and CTRL3 are reserved for future use.
 
 
+The microcontroller has two registers for managing errors, "error count" and "error message". These registers keep track of the number of errors that have occurred and the error codes. Each error code corresponds to an error message, which is given in the address map of the microcontroller. The error message register can be reset by writing 0x00 to the error count register.
+
+The correct procedure to read all errors would be to first read the number of errors from the error count register. The number of errors determines how many bytes of the error message register to read; when that is done, the procedure writes 0x00 to the error count register.
+
 \notinmain{Skriv om mikrokontroller oppsett, software funksjoner, data header, register map}
 
 

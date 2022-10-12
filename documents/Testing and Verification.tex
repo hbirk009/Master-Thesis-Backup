@@ -27,9 +27,26 @@ The communication between the different parts of the prototype has been verified
 
 Another problem with the test setup is the wire length between the evaluation board and microcontroller. The final product will use 3 metres of wire between them, but the test setup is only about 20 cm of wire. The length of the wire determines the resistance in it, and can affect signal transmission quality. For a new test setup in the future, longer wires should be used.
 
+\subsection{MB Hub Verification}
 
+The communication link between the control software and the MB Hub uses the IPbus communication protocol, and tests have been performed to ensure it is reliable\cite{IPbus}. However, our communication link uses a custom \gls{fpga} design, so it must be tested to verify it works as intended.
 
-\subsection{Bit Error Rate}
+\subsubsection{Error Rate}
+
+The reliability of the \gls{fpga}-design must be verified, which can be done by writing to a register, reading the value back, and verifying it is the same value. The MB Hub has a dummy module with two registers, TX and RX. The TX register sends its data to RX; this can be used to verify the communication link and the design. To ensure the test reads the actual values of the registers, the test alternates between writing and reading from the dummy module and the global module. This method assures that we are not reading from a buffer in the IPbus module. Finally, random values are written to the registers to increase the test coverage.
+
+The test was run for 5 hours, reading 10 000 000 values from four registers, RX from the dummy module, baud rate, enable 1, and enable 2 from the global module. The test showed no errors from the transmissions. This result indicates that both the IPbus and \gls{fpga}-design is working as intended.
+
+\subsubsection{Transmission Speed}
+
+The transmission speed between the control software and the MB Hub can significantly impact the speed of the \gls{pcs}-chain; this property of the MB Hub must therefore be tested and verified. The IPbus user guide states that reading or writing a single word has a latency of approximately 250 $\mu$s\cite{ipbus_guide}, but this might not reflect our setup, which is why we performed a transmission speed test. The test uses the time library from Python to measure the write and read speed of the dummy module on the MB Hub.
+
+The TX and RX register were written and read 1 000 000 times. On average, the single write latency was 0.4 ms($\sigma$ = 0.2 ms), and the single read latency was also 0.4 ms($\sigma$ = 0.3 ms). These measurements deviate from the 250 $\mu$s. The imperfect time measurement from the software could be the cause of this deviation.
+
+This increased delay in the IPbus transmission can explain why the measured configuration timing in \autoref{ssec: con_timing} deviated from the calculated timing. 
+
+\subsection{USART Bit Error Rate}
+
 \label{ssec: bit_error}
 The bit error rate that occurs while sending data from control software to microcontroller must be verified and ensured is within an acceptable rate. Each data transferal goes through IPbus down to the \gls{fpga} and then \gls{fpga} relays the data to the microcontroller through standard \gls{usart} protocol.
 
