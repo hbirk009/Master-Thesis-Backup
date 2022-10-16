@@ -39,7 +39,7 @@ Namedtuples is a container in Python with user-defined parameters. The address m
 \end{figure}
 \FloatBarrier
 
-The namedtuple stores data about the name, address value, number of bits, measurement type, and read/write access of a register. The \gls{api} retrieves information from the namedtuple and uses it to communicate with the microcontroller. This serves two purposes; first, the user does not need to know the address map of the microcontroller; they only enter the name of a namedtuple, and the \gls{api} takes care of the rest. Second, the "mcu\_addr" package is a common access point for the microcontroller address map. If a developer in the future needs to add a register, or change the address value of an existing register, then one only needs to edit a single file, the "mcu\_addr" package.
+The namedtuple stores contain information such as name, address value, number of bits, measurement type, and read/write access of a register. The \gls{api} retrieves information from the namedtuple and uses it to communicate with the microcontroller. This serves two purposes; first, the user does not need to know the address map of the microcontroller; they only enter the name of a namedtuple, and the \gls{api} takes care of the rest. Second, the "mcu\_addr" package is a common access point for the microcontroller address map. If a developer in the future needs to add a register, or change the address value of an existing register, then one only needs to edit a single file, the "mcu\_addr" package.
 
 
 \subsubsection{Configuration API}

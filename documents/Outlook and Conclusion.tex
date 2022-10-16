@@ -1,0 +1,32 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+\section{Outlook and Conclusion}
+\textit{This chapter discusses the work that has been done in this thesis and the result of said work. A discussion is made on the future of the power delivery system and how it is related to the other systems of the \gls{pct}-project.}
+
+\subsection{Summary}
+
+The objective of this thesis was to create a control system for the power delivery of the \gls{pct}-project. This involved creating a configuration, and monitoring system for the power delivery, A Human to Machine Interface to the system, in the form of \gls{gui}s, and a database system for storing configuration and monitoring data. Additionally, the system needed to be created in a structured manner with clear levels of abstraction, to make it easier to expand upon in the future.
+
+It was decided to create several levels of abstraction of the \gls{api}, using Python classes. These \gls{api}s were interfaced with the MB Hub and the Monitoring Board, which comprises the Power Control system. A high level \gls{api} for the configuration process was created. This \gls{api} incorporates a ramp-up algorithm to safely turn on the ALPIDE-sensors while configuring the Monitoring Board. MongoDB was chosen as the database used for the configuration system and a Python class was designed to interface with the database and format the configuration sets. A \gls{gui} was created that allowed the user to load configuration sets from the database, as well as create them interactively using the \gls{gui}. The timing of the of configuration process was calculated and measured to be satisfactory for the project.
+
+A monitoring \gls{api} was created, to poll data and insert into the database. InfluxDB was chosen for storing data with timestamps and Grafana is used to display the data to the user. A filtering class was created that allowed for filtering data points based on OSIsoft's exception filter. A simple \gls{gui} was also created to set up the monitoring process.
+
+A simulation was created to verify the early designs of the control software, and further tests were performed on the Power Control System prototype to verify the functionality communication link between control software and the Monitoring Board. Although the tests showed that the reliability of the Power control system was not satisfactory and a redesign of the prototype was warranted.
+
+Lastly, a discussion was made on the modularity of the control software, and how it may be reused and expanded upon in the future.
+
+\subsection{Outlook}
+The control software presented in this thesis is functional and documented, which serves as a foundation for further development in the future. The verification of the system must still be assessed with actual hardware, and the error handling has yet to be integrated with the configuration and monitoring.
+
+A discussion has been made on the reusability of the control software, in context of the other systems in the \gls{pct}-project. Using a similar structure and code for the other systems appears to be viable due to the control software being generic, but system specific functions must redefined. In particular, the low-level \gls{api}s must be redefined for the systems they interface with. Software relating to the databases in particular, is not directly tied to the Power Control System, and therefore has the potential to be reused in other configuration and monitoring systems.
+
+There is still room for optimization for the control system, but tests done on the system have shown it is more than fast enough for this project. The optimization may become more relevant when we include readout and cooling in the process.
+
+\subsection{Conclusion}
+
+This thesis have presented a control system that can be used for the power delivery system of the \gls{pct}-project. This control software consists of several levels of \gls{api}s, \gls{gui}s, databases for configuration and monitoring, web interfaces, and test functions for the Power Control System. Tests concluded the control system fulfilled the timing requirements set by the \gls{pct}-project.
+
+
+\end{document}

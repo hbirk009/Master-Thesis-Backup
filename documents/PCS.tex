@@ -132,7 +132,7 @@ ConnectionManager contains the HwInterface object for each connected IPbus modul
 
 A read or write is performed by retrieving the node for a register and issuing a write or read from the node object. Note that the read or write functions only puts your request in a packet, it does not send it. It will only send the packet of requests when the dispatch function is called. This reveals an important aspect of IPbus, it can send packets of data all at once. IPbus has a single-word latency of 250 $\mu$s when transferring data, which is significantly larger than other control protocols, but by concatenating the data into larger packets before sending them, IPbus can increase its throughput up to a factor of 2000\cite{IPbus}. This means that IPbus performs optimally if we limit network dispatches as much as possible.
 
-The conclusion from this is that we must design the control software around limiting dispatches so that we can fully utilize the IPbus throughput and ensure that our system is quick and responsive. \autoref{ssec: mcu_api} discusses how the \gls{api} for the \gls{fpga} is designed to allow for sending multiple data packets in one transmission.
+The conclusion from this is that we must design the control software around limiting dispatches. This allows us to fully utilize the IPbus throughput and ensure that our system is quick and responsive. \autoref{ssec: mcu_api} discusses how the \gls{api} for the \gls{fpga} is designed to allow for sending multiple data packets in one transmission.
 
 
 \subsection{MB Hub}
