@@ -80,6 +80,12 @@ The lower level \gls{api}s that connect to the microcontroller and the MB Hub us
  
 The \gls{api}s developed for the \gls{pcs} use namedtuples to process register information, which is described in \autoref{ssec: mcu_api}. The namedtuples make it easier to repurpose the \gls{api}s to a different system. A developer can define the address map of a different module using the same namedtuples, and the \gls{api}s would only require small modifications to work with the new system.
  
+\subsection{USART communication}
 
+The communication link between the MB Hub and the microcontroller is outside the scope of this thesis. However, significant time have been spent on creating verification tests of the \gls{pcs}, and this by extension, includes the USART communication between the MB Hub and the microcontroller. This section covers the potential sources of these errors.
+
+A 17 hour test was done on the USART communication in an earlier part of the development cycle, and no errors were observed. There were however errors observed at lower baud rates. The test setup was then briefly moved to an expo, and after returning, the error rate was observed to be much higher, similar to the results shown in \autoref{ssec: bit_error}, even at higher baud rates. These results suggests there exist two sources of errors in the communication, the first is dependent on the baud rate of the \gls{usart}, and the other is most likely caused by the inconsistent test environment.
+
+Previous tests of the prototype did not suffer from any errors in the bit, and as such the most probable cause of the errors is due to inconsistent test environment. Due to time constraints, further tests and troubleshooting were not done, but the underlying issue most likely comes from uneven ground levels between \gls{fpga} and microcontroller, since the bit flip is always a zero turning into a one, never the other way.
 
 \end{document}

@@ -88,30 +88,20 @@ This new calculated timing for polling all data lies within the standard deviati
 
 
 
-\subsubsection{Error Rate}
-
-The reliability of the \gls{fpga}-design must be verified, which can be done by writing to a register, reading the value back, and verifying it is the same value. The MB Hub has a dummy module with two registers, TX and RX. The TX register sends its data to RX; this can be used to verify the communication link and the design. To ensure the test reads the actual values of the registers, the test alternates between writing and reading from the dummy module and the global module. This method assures that we are not reading from a buffer in the IPbus module. Finally, random values are written to the registers to increase the test coverage.
-
-The test was run for 5 hours, reading 10 000 000 values from four registers, RX from the dummy module, baud rate, enable 1, and enable 2 from the global module. The test showed no errors from the transmissions. This result indicates that both the IPbus and \gls{fpga}-design is working as intended.
-
-
-\subsection{USART Bit Error Rate}
+\subsection{USART Interface Test}
 
 \label{ssec: bit_error}
-The bit error rate that occurs while sending data from control software to microcontroller must be verified and ensured is within an acceptable rate. Each data transferal goes through IPbus down to the \gls{fpga} and then \gls{fpga} relays the data to the microcontroller through standard \gls{usart} protocol.
+The bit error rate that occurs while sending data from the MB Hub to the microcontroller must be verified and ensured is within an acceptable rate. Testing this communication link can be done by sending data from the control software to a TX register on the MB Hub, which starts the \gls{usart}-transmission to the microcontroller. We know from previous tests the communication link between the control software and the MB Hub has a negligible error rate, we will therefore assume all bit errors to come from the communication link between the MB Hub and the microcontroller.
 
-We know that IPbus has a negligible error rate\cite{IPbus}, so any errors stemming from the \gls{fpga} will most likely come from the implementation of the \gls{fpga} design. The \gls{fpga} design itself is relatively simple by itself and as such, we will assume that all erroneous bits comes from the \gls{usart} communication between the \gls{fpga} and microcontroller.
+The test is done by performing a write to a microcontroller register, we then perform 1000 read operations from said register. This gives one sample, and this test is done a 100 000 times to give us a mean error rate. Multiple bit patterns should be used to test edge cases such as alternating bits, all 1's, all 0's or random bit pattern. Results of different bit patterns is given from \autoref{fig: all_0_bit_rate} to \ref{fig: rand_bit_rate}.
 
-When looking for errors in the data sent, we must be aware of where the data originates, if it is data from the \gls{fpga} then it will almost always be no errors. \autoref{fig: handshake_vals} shows how the data is processed between \gls{fpga} and microcontroller during a transaction, and from that we can see that almost all data in the RX register comes from the microcontroller. The only exception to this is during a write operation, where the \gls{fpga} will insert the data it sent to the RX register. The data bits during a write operation is therefore unimportant and does not tell us anything about the connection between \gls{fpga} and microcontroller. Testing for bit error rates using the write operation will therefore give us a bad coverage of the tested bits.
+ 
 
-Testing for bit errors should be performed using the read operation, additionally, to ensure good test coverage, multiple bit patterns should be used to test edge cases like alternating bits, all 1's, all 0's or random bit pattern.
-
-The test is done by performing a write to a microcontroller register that can be written and read from, we then perform 1000 read operations from said register. This gives one sample, and this test is done a variable amount more times to give us a mean error rate. Two versions of the test script is created, one where the number written is user defined, and the other uses random bit patterns for each run. Results of different bit patterns is given from \autoref{fig: all_0_bit_rate} to \ref{fig: rand_bit_rate}.
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=18cm]{images/error_rate_all_0s.png}
-    \caption{Histogram showing bit error rate with all 0's bit pattern.}
+    \caption{Histogram showing the mean bit error rate with all 0's bit pattern. Black line is the standard deviation.}
     \label{fig: all_0_bit_rate}
 \end{figure}
 \FloatBarrier
@@ -119,7 +109,7 @@ The test is done by performing a write to a microcontroller register that can be
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=18cm]{images/error_rate_all_1s.png}
-    \caption{Histogram showing bit error rate with all 1's bit pattern.}
+    \caption{Histogram showing the mean bit error rate with all 1's bit pattern. Black line is the standard deviation.}
     \label{fig: all_1_bit_rate}
 \end{figure}
 \FloatBarrier
@@ -127,7 +117,7 @@ The test is done by performing a write to a microcontroller register that can be
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=18cm]{images/error_rate_alternating_1s.png}
-    \caption{Histogram showing bit error rate with alternating 1's bit pattern.}
+    \caption{Histogram showing the mean bit error rate with alternating 1's bit pattern. Black line is the standard deviation.}
     \label{fig: alternating_1_bit_rate}
 \end{figure}
 \FloatBarrier
@@ -135,16 +125,32 @@ The test is done by performing a write to a microcontroller register that can be
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=18cm]{images/error_rate_random.png}
-    \caption{Histogram showing bit error rate during a random bit read operation.}
+    \caption{Histogram showing the mean bit error rate during a random bit read operation. Black line is the standard deviation.}
     \label{fig: rand_bit_rate}
 \end{figure}
 \FloatBarrier
 
-Important to note that the baud rate is set to 921600 for these tests. From the test results we can see that all but the "all 1's" test gave us errors. Alternating 1's and random bit pattern have a similar error pattern, they match well if we consider the standard deviation of the error measurements. All 0's gave a significant higher error rate than the other patterns, with worst bit error at 9 for bit 7. 9 bit errors for every 1000 reads results in an error rate of almost 1\%, which is an unacceptably high error rate. Even the alternating and random bit patterns have 1 error on several bits for every 1000 read, which is still unnaturally high.
+Important to note that the baud rate is set to 921600 for these tests. From the figures we can see that all but the "all 1's" test gave us errors. Alternating 1's and random bit pattern have a similar error pattern, they match well if we consider the standard deviation of the error measurements. All 0's gave a significant higher error rate than the other patterns, with worst bit error at 9 for bit 7.
+
+
 
 The all 1's pattern is the outlier, having no errors during the entire test. That, combined with the all 0's pattern having abnormal amounts of errors, we must assume that the cause of the errors is misinterpreting 0's to be 1's. In other words, the sampling timing is not the inherent cause of the errors. Judging from the bits that have errors, only the data bits(15:0) have errors, but other than that, no obvious pattern gives us more insight into the errors.
 
-Previous tests of the prototype did not suffer from any errors in the bit, and as such the most probable cause of the errors is due to inconsistent test environment. Due to time constraints, further tests and troubleshooting were not done, but the underlying issue most likely comes from uneven ground levels between \gls{fpga} and microcontroller, since the bit flip is always a zero turning into a one, never the other way.
+A system's reliability can be quantified by its \gls{mtbf}, which determines the time span between faults occurring in a system\cite{mtbf_intro}. If we assume random values are being read, then from \autoref{fig: rand_bit_rate}, we can assume on average, one error occurs for every 1000 USART transactions. From \autoref{ssec: con_timing}, it was calculated that one transmission from control software to microcontroller took 288 $\mu$s, this means we can expect the \gls{mtbf} of one \gls{usart} link to be:
+
+\begin{equation} \label{eqn:single_mtbf}
+1000*288\mu s = 0.288 s
+\end{equation}
+
+The entire \gls{pcs}-system will have a \gls{usart}-link for every layer, which means we have to consider the \gls{mtbf} for every link to find the \gls{mtbf} for the entire system. The formula for the system \gls{mtbf} can be found by considering 43 subsystems in series\cite{mtbf_calc}. If each subsystem have the same \gls{mbtf}, then:
+
+\begin{equation}
+    \frac{1}{43*\frac{1}{MBTF}} = \frac{1}{43*\frac{1}{0.288}} = 0.0067s
+\end{equation}
+
+The \gls{mbtf} of the \gls{pcs}-system will be approximately 7 ms, which is unacceptable for use. The \gls{mtbf} of the \gls{pcs} should ideally be measured in days, not milliseconds. The conclusion from this is the \gls{usart} communication between the MB Hub and the microcontroller is unacceptable and the error rate must be significantly improved before it can be used in the \gls{pcs}.
+
+
 
 \subsection{Baud rate error rate}
 
