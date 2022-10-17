@@ -40,25 +40,35 @@ The monitoring system shown in \autoref{fig: pcs_monitoring} is made of several 
 \end{figure}
 \FloatBarrier
 
-The top level of the \gls{api} interfaces with the microcontroller through the \textit{mcu\_api}. The database is interfaced using a custom class, \textit{influx\_api}, which interfaces with the influx API to store data in the database and also filter the data using pandaframe custom class. The main function of the monitoring API class is to poll the data from the microcontroller and insert it into the influx database. 
+The top level of the \gls{api} interfaces with the microcontroller through the \textit{mcu\_api}. The database is interfaced using a custom class, \textit{influx\_api}, which interfaces with influxDB to store data in the database and also filter the data using a pandaframe custom class. The main function of the monitoring API class is to poll the data from the microcontroller and insert it into the influx database. 
 
-Polling the data involves retrieving the measured voltage and current of DVDD, AVDD and PWELL, as well as retrieving the measured temperature reading from the PT1000 element. In addition to this, the monitoring API must be able to handle errors from the \gls{mb}. The microcontroller have an error count, and an error message register, the error count counts the number of errors that have occurred during the run, and each byte in the message register contains a corresponding error code. The monitoring API must also poll these registers during the monitoring, which requires its own process. \autoref{fig: monitor_flow} shows the flowchart performed when the polling function is called.
+Polling the data involves retrieving the measured voltage and current of DVDD, AVDD and PWELL, as well as retrieving the measured temperature reading from the PT1000 element. In addition to this, the monitoring API must be able to handle errors from the \gls{mb}. \autoref{ssec: microcontroller} goes into detail on the error handling of the microcontroller. The monitoring API must also poll these registers during the monitoring, which requires its own process. The polling function only polls data once, and then returns error messages. The purpose of this to allow the function to return error messages to the monitoring \gls{gui}. \autoref{fig: monitor_flow} shows the flowchart performed when the polling function is called.
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[scale=0.9]{images/Monitoring Flowchart.pdf}
-    \caption{Flowchart of the polling operation performed during the monitoring process.}
+    \caption{Flowchart of the polling function in the monitoring API.}
     \label{fig: monitor_flow}
 \end{figure}
 \FloatBarrier
 
-The polling the data is relatively simple, it uses the microcontroller API to broadcast and retrieve the data from all of the monitoring addresses. After polling the data, the function checks if any errors have occurred, if yes, it will poll the error codes, convert them to messages and return them. \autoref{ssec: microcontroller} describes the error registers on the microcontroller and their functionality.
+Polling the data is simple, it uses the microcontroller API to broadcast and retrieve the data from all of the monitoring addresses. After inserting the data into the database, the function checks if any errors have occurred on the microcontroller, if yes, it will poll the error codes, convert them to messages and return them.
 
-The polling function only polls the data once; the \gls{gui} which instantiates the monitoring \gls{api} must continuously poll data using this function during the monitoring process.
+The polling function only polls the data once; the \gls{gui} which instantiates the monitoring \gls{api} must continuously poll data using this function during the monitoring process. The flowchart of this procedure in the \gls{gui} class is given in \autoref{fig: monitor_overhead}.
 
-The monitoring \gls{api} polls data based on the name tuples stored in the \textit{monitor\_addr} list in the \textit{mcu\_addr} package. This means that one can freely change the monitoring addresses by adding or removing tuples in the list. This is useful if changes to the monitoring process are made, and also makes it easier to repurpose the \gls{api} to other control systems in the \gls{pct}-project. In addition, each error message has a corresponding named tuple which is used to convert error code to message, as well as indicating the severity of the error. This information is used when inserting the messages into the logging database.
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[scale=0.9]{images/polling_overhead.pdf}
+    \caption{Flowchart of the top level monitoring process.}
+    \label{fig: monitor_overhead}
+\end{figure}
+\FloatBarrier
 
-\notinmain{Skriv mer her når eg har faktisk laget denne klassen, pluss gui osv. nevn og g options her}
+From the figure, a Boolean flag called "Monitor Flag" is set high and the process polls the data from the Monitoring board. if the polling function returns errors, they are then displayed in the \gls{gui} logging window. This monitoring process will continue until an outside function sets the Boolean flag low. Displaying the errors from the microcontroller in the \gls{gui} is a temporary solution for handling errors. The design decision has yet to be made on how to process the errors, for now they are only displayed in the logging window.
+
+
+The monitoring \gls{api} polls data based on the namedtuples stored in the \textit{monitor\_addr} list in the \textit{mcu\_addr} package. This means that one can freely change the monitoring addresses by adding or removing tuples in the list. This is useful if changes to the monitoring process are made, and also makes it easier to repurpose the \gls{api} to other control systems in the \gls{pct}-project. In addition, each error message has a corresponding named tuple which is used to convert error code to message, as well as indicating the severity of the error.
+
 
 \subsection{Monitoring GUI}
 
@@ -105,7 +115,7 @@ In the example, the "\textit{from}" command chooses which source the data should
 
 The structure of the database must also be considered. InfluxDB stores data in "buckets", which is their name for a database with a retention policy. A retention policy is a given time interval for how long the database will store its data. All of this can be defined and modified in the InfluxDB web interface. Storing large amounts of data points for long periods of time is often resource heavy and unnecessary, it is therefore logical to store the data points in a bucket with a short retention policy. For longer periods of time, the data can be filtered and sent to a different bucket with longer retention policy. InfluxDB supports several different options for filtering data, such as mean, or nth sample filtering, internally using Flux querying. 
 
-The filter used on the data point must reduce the size of data set, while also minimizing the amount of information lost. Filtering the data points is discussed more in \autoref{ssec: downsampling}.
+The filter used on the data point must reduce the size of the data set, while also minimizing the amount of information lost. Filtering the data points is discussed more in \autoref{ssec: downsampling}.
 
 InfluxDB also supports the Telegraf plugin, which allows for quick and easy monitoring of the database performance. This is useful for obtaining metrics on the database while the monitoring is performed. \autoref{fig: telegraf_example} shows the Telegraf plugin window in the web interface.
 
@@ -149,7 +159,6 @@ The above figure shows the overview dashboard displaying arbitrary data that has
 
 Using these two dashboards allow for easy and seamless monitoring of the data retrieved from the \gls{mb}s. Both dashboards are exported to JSON-format and stored on the GitHub repository. Setting up the dashboards on a new Grafana server would only require uploading the JSON-document for each dashboard onto the Grafana web application.
 
-\notinmain{Bør egentlig bare fjerne heile dette avsnittet: Although it is worth mentioning that the overview graphic display comes with a fault, the user can only see one type of measurement at once in a window. If it is of value to see two measurement types at once, for example DVDD and temperature, the user would have to either copy the dashboard onto a new window, or they would have to scroll between the two. Grafana contains many tools that may allow us to condense all the info to fit one screen, but there was not enough time while working to perform this re-design.}
 
 \notinmain{snakke om flux, vise eksempel, og så kanskje oppsettet av databasen, retention policy}
 
@@ -159,26 +168,26 @@ Using these two dashboards allow for easy and seamless monitoring of the data re
 Attributes such as read and write speeds, storage space and database performance are all important characteristics that needs to be determined before we can begin designing and assess the system.
 
 \notinmain{del denne opp i subsubsections}
-\subsubsection{Transmission speed of PCS}
-During the monitoring operation, the current consumption, voltage levels and temperatures must be read for all 43 layers, along with the error register. This leads to reading 4*43 registers every time we poll the \gls{mb}s. There is no inherent reason to have a delay between the polling, so polling the data as often as possible is the logical step to take. The transmission speed of the data will then not only determine the speed of data acquisition, but also the amount of data points received per second, which determines how much storage space is needed, and the sampling rate of the measurements.
+\subsubsection{Transmission speed of monitoring process}
+During the monitoring operation, the temperature must be measured, as well as the current consumption, and voltage levels of DVDD, AVDD, and PWELL for all 43 layers, along with the error register. This leads to reading 8*43 registers every time we poll the \gls{mb}s. There is no inherent reason to have a delay between the polling, so polling the data as often as possible is the logical step to take. The transmission speed of the data will then not only determine the speed of data acquisition, but also the amount of data points received per second, which determines how much storage space is needed, and the sampling rate of the measurements.
 
-Subsection 5.6 shows the calculating of the transmission speed from client software to microcontroller, \autoref{eqn:write_delay_equation} shows that a single transmission will take approximately 288 microseconds. For the monitoring system, a read request must be sent to all layers and then client software must retrieve the data from the RX register of every com\_module. This translates to writing to the global TX register and reading 43 registers from the com\_modules. This action must be performed 4 times, to get all measurements. The time for polling all measurements from every layer once then becomes:
+ For the monitoring system, a read request must be sent to all layers and then client software must retrieve the data from the RX register of every com\_module. This translates to writing to the global TX register and reading 43 registers from the com\_modules. This action must be performed 8 times, to get all measurements. The time for polling all measurements from every layer once then becomes:
 
 \begin{equation} \label{eqn:monitoring_timing}
-4*(t_{write}+t_{\mu } + 43*t_{read}) = 4*(250\mu s + 33 \mu s + 43*250\mu s) = 44132 \mu s = 44.132 ms
+8*(t_{write}+t_{\mu } + 43*t_{read}) = 8*(250\mu s + 33 \mu s + 43*250\mu s) = 88264 \mu s \approx 88 ms
 \end{equation}
 
-The read speed of IPbus is assumed to be 250 microseconds in this calculation. We can now assume that one poll of all measurements will approximately take 44 milliseconds. The amount of data points retrieved per second will then be:
+The read speed of IPbus is assumed to be 250 microseconds in this calculation. We can now assume that one poll of all measurements will approximately take 88 milliseconds. The amount of data points retrieved per second will then be:
 
 \begin{equation} \label{eqn:data_points_per_second}
-\frac{1}{0.044132}*4*43 =  22.659 * 4*43 \approx 3897
+\frac{1}{0.088264}*8*43 =  22.659 * 8*43 \approx 3897
 \end{equation}
 
 The monitoring system polls all measurements approximately 23 times every second, which leads to retrieving approximately 3897 data points every second. The sampling rate is then 23 times per second, which is acceptable for our use.
 
-Furthermore, a test was performed to measure the timing of polling the data. This test used the prototype setup of the \gls{pcs} mentioned in \autoref{ssec: test_setup}. The main limitation of this test is that the test setup only has one layer connected to the \gls{fpga}, meaning we can only poll one layer during the test. We should therefore expect that the measured polling time to be shorter than the calculated one. if we use \autoref{eqn:monitoring_timing} to calculate the speed of polling one layer, then the timing is found to be 2.132 ms.
+Furthermore, a test was performed to measure the timing of polling the data. This test used the prototype setup of the \gls{pcs} discussed in \autoref{ssec: test_setup}. The main limitation of this test is that the test setup only has one layer connected to the \gls{fpga}, meaning we can only poll one layer during the test. We should therefore expect that the measured polling time to be shorter than the calculated one. if we use \autoref{eqn:monitoring_timing} to calculate the speed of polling one layer, the timing is found to be approximately 4.3 ms.
 
-The test will poll all data points once and record the time spent polling them, it will then repeat this process 1000 times and find the average of the data. The results, along with comparison of the calculated values is shown in \autoref{tab:monitor_speed}.
+The test will poll all data points once and record the time spent polling them, it will then repeat this process a million times and find the average of the data. The results, along with comparison of the calculated values is shown in \autoref{tab:monitor_speed}.
 
 \begin{table}[h]
 \centering
@@ -186,31 +195,37 @@ The test will poll all data points once and record the time spent polling them, 
  \hline
   Calculated timing(43 layers) & Calculated timing(1 layer) & Measured timing(1 layer) \\ [0.5ex] 
  \hline\hline
-    44.132ms & 2.132ms & 8.7ms ($\sigma$ = 3.4ms) \\  [1ex] 
+    44.132ms & 4.3ms & 8.7ms ($\sigma$ = 3.4ms) \\  [1ex] 
  \hline
 \end{tabular}
 \caption{\label{tab:monitor_speed} Comparison of the polling timing of the monitoring API}
 \end{table}
 \FloatBarrier
 
-The polling timing for polling a single layer was also calculated. Polling the test setup took 8.7 ms with a standard deviation of 3.4 ms. Comparing the calculated timing of polling one layer with the measured timing, we can see that the measured speed fits well with the calculations. the discrepancy between the two values can be explained by the time measurement method not being completely accurate to the data transfer. 
+Polling the test setup took 8.7 ms with a standard deviation of 3.4 ms. Comparing the calculated timing of polling one layer with the measured timing, we can see that the calculated timing of one layer barely does not fall within one standard deviation of the measured timing. the discrepancy between the two values can be explained by the time measurement method not being completely accurate to the data transfer. 
 
 \subsubsection{Storage Space}
 Storage space is a vital part of the database, and is determined by many factors. The storage space needed for this project is determined by the amount of data retrieved every second, the resolution of said data, the retention policy of the buckets in the database and how much space is needed to store the data points in the database.
 
-The amount of data retrieved every second has already been calculated in \autoref{eqn:data_points_per_second}, amounting to 3897 data points per second. The type of data stored in the monitoring operation, excluding any log messages, is float numbers. The resolution of the float numbers is the amount of decimal points used for the data point, and therefore this must be decided beforehand. The temperature will not change erratically, an accuracy up to the first decimal point is therefore acceptable. The current and voltage is measured in mA and mV, respectively, already giving us a high level of precision. The voltage is measured by a shunt capacitor that can read voltages up to 250 mV and temperatures will obviously not exceed 1000 degrees, so 4 decimals is a reasonable resolution to store the data in, giving us one decimal point accuracy for both current and temperature. This translates to needing 3 bytes, or 12 bits to store the information in our database. In the InfluxDB hardware sizing guidelines, it is stated that a non-string value requires approximately 3 bytes of data to be stored. Note that this guideline is specified for Influx V1, but we can safely assume this also applies for Influx V2. This leads us to requiring 6 bytes of storage for a single data point. The amount of bytes of data stored each second will then be: 
+The amount of data retrieved every second has already been calculated in \autoref{eqn:data_points_per_second}, amounting to 3897 data points per second. The type of data stored in the monitoring operation, excluding any log messages, is float numbers. The resolution of the float numbers is the amount of decimal points used for the data point, and therefore this must be decided beforehand. The temperature will not change erratically, an accuracy up to the first decimal point is therefore acceptable. The current and voltage is measured in mA and mV, respectively, already giving us a high level of precision. The voltage is measured around a shunt capacitor that can read voltages up to 250 mV and temperatures will obviously not exceed 1000 degrees, so 4 decimals is a reasonable resolution to store the data in, giving us one decimal point accuracy for both current and temperature. This translates to needing 3 bytes, or 12 bits to store the information in our database. In the InfluxDB hardware sizing guidelines, it is stated that a non-string value requires approximately 3 bytes of data to be stored\cite{influx_sizing}. Note that this guideline is specified for Influx V1, but we can safely assume this also applies for Influx V2. This leads us to requiring 6 bytes of storage for a single data point. The amount of bytes of data stored each second will then be: 
 
 \begin{equation} \label{eqn:total_bytes_per_second}
 3897*4 = 15588 
 \end{equation}
 
-Which becomes 16 about kilobytes per second. Lastly, the retention policy of the database determines the max amount of storage space needed. The long retention database is set to have a retention of 30 days, giving us:
+Which becomes about 16 kilobytes per second. In this project, it is assumed the storage space will be approximately 500 GB. We can then calculate the highest retention policy without exceeding the storage limits. First, we calculate how long the monitoring process can run before running out of storage:
 
 \begin{equation} \label{eqn:total_bytes_total}
-15588*60*60*24*30 = 40.4 * 10^9
+\frac{500 * 10^9}{15588} = 320759s \approx 8910\; hours
 \end{equation}
 
-In total for the long retention database, a storage space of 40.4 gigabytes is required. This is a relative small amount of storage space required and filtering of the data points can lead to reducing the space requirement even more. By applying the same formula from \autoref{eqn:total_bytes_total} for the short retention database, with a retention of 24 hours, the storage space will only amount to 1.34 gigabytes. In total, storage for the monitoring database amounts to 41.74 gigabytes.
+Next, let us assume that the \gls{pct} system will be running for a maximum of four hours during one day. The maximum retention policy becomes:
+
+\begin{equation} \label{eqn:total_retention}
+\frac{8910}{4} = 2272\; days \approx 6\; years
+\end{equation}
+
+In total, 500 GB of storage allows us to store data for a little over six years. This is a long time period for storing data, and this can be increased even more if we filter the data. A retention policy of six years might be excessive, it might not be relevant to store data for more than 1-2 years. This is a decision that has to be made by the people who will operate the system itself. In conclusion, the storage space itself does not play a major decision for how long we want to store the data.
 
 \notinmain{Gjør ein test run av databasen og sjå hvor mye plass den tar og sammenlign med kalkulert verdi}
 
@@ -255,9 +270,9 @@ We can compare the speed of different batching sizes by inserting a specified am
 
  Downsampling is the process of removing sample points in a signal and it is crucial to do for three reasons: first, to save disk space used for storing the data, second, to reduce network traffic, and last, to increase performance of your server. Recording data from a sensor inadvertently leads to redundant data points. If the measurement remains static over a greater period of time, recording high resolution data of essentially the same value is a waste of space. Additionally, the data is received from an instrument with an uncertainty to its measurements, meaning that storing data points that are within the uncertainty range of the previous data point is also redundant. We want to downsample our data in such a way that we remove as much data as possible, while keeping the information retained.
  
- There are many ways to down-sample your data, there is entire separate fields on the subject, but for this project there is no need to downsample with cutting edge technology. However, efforts should still be made to avoid storing too much redundant data. It is important for this monitoring system to record abnormal data points, i.e. spikes in the measurement data, which can help us diagnose issues with the \gls{dtc}. Therefore using mean or similar filters, results in too coarse of a filtering to be used in this project(this does not mean that these filters should never be used, but they are not suitable for a short retention database).
+ There are many ways to down-sample your data, there is entire separate fields on the subject, but for this project there is no need to downsample with cutting edge technology. However, efforts should still be made to avoid storing too much redundant data. It is important for this monitoring system to record abnormal data points, i.e. spikes in the measurement data, which can help us diagnose issues with the \gls{dtc}. Therefore using mean or similar filters, results in too coarse of a filtering to be used in this project, this does not mean that these filters should never be used, but they are not suitable for a short retention database.
  
- Creating a custom filter that fits our system is one solution, the question then becomes what type of filter fits the best. A filtering technique used by OSIsoft in their PI servers seems promising to base our own filter on, due to it focusing on filtering data from instruments. The technique uses what is know as an exception and compression rule, that aims to reduce the amount of data points from an instrument while retaining the information of the graph. The exception filter is based on removing data that can be perceived as noise from the sensors\cite{osisoft_exception}. \autoref{fig: osisoft_exception} shows how this is implemented in OSIsoft's PI servers.
+ Creating a custom filter that fits our system is one solution, the question then becomes what type of filter fits the best. A filtering technique used by OSIsoft in their PI servers seems promising to base our own filter on, due to it focusing on filtering data from instruments\cite{osisoft_exception}. The technique uses what is know as an exception and compression rule, that aims to reduce the amount of data points from an instrument while retaining the information of the graph. The exception filter is based on removing data that can be perceived as noise from the sensors. \autoref{fig: osisoft_exception} shows how this is implemented in OSIsoft's PI servers.
  
 \begin{figure}[!ht]
     \centering
