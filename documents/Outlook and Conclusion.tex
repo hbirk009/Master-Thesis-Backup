@@ -18,7 +18,7 @@ A simulation was created to verify the early designs of the control software, an
 Lastly, a discussion was made on the modularity of the control software, and how it may be reused and expanded upon in the future.
 
 \subsection{Outlook}
-The control software presented in this thesis is functional and documented, which serves as a foundation for further development in the future. The verification of the system must still be assessed with actual hardware, and the error handling has yet to be integrated with the configuration and monitoring.
+The control software presented in this thesis is functional and documented, which serves as a foundation for further development in the future. The verification of the system must still be assessed with actual hardware, and ideally in the future, a testbench should be created for the control software, which would allow for quick verification of the software. Handling of the errors from the microcontroller must be designed and implemented, ideally with a logging database, and this system must be integrated with with configuration and monitoring processes.
 
 A discussion has been made on the reusability of the control software, in context of the other systems in the \gls{pct}-project. Using a similar structure and code for the other systems appears to be viable due to the control software being generic, but system specific functions must redefined. In particular, the low-level \gls{api}s must be redefined for the systems they interface with. Software relating to the databases in particular, is not directly tied to the Power Control System, and therefore has the potential to be reused in other configuration and monitoring systems.
 

@@ -175,8 +175,7 @@ The test is done by performing a write to a microcontroller register, we then pe
 Important to note that the baud rate is set to 921600 for these tests. From the figures we can see that all but the "all 1's" test gave us errors. Alternating 1's and random bit pattern have a similar error pattern, they match well if we consider the standard deviation of the error measurements. All 0's gave a significant higher error rate than the other patterns, with worst bit error at 9 for bit 7.
 
 
-
-The all 1's pattern is the outlier, having no errors during the entire test. That, combined with the all 0's pattern having abnormal amounts of errors, we must assume that the cause of the errors is misinterpreting 0's to be 1's. In other words, the sampling timing is not the inherent cause of the errors. Judging from the bits that have errors, only the data bits(15:0) have errors, but other than that, no obvious pattern gives us more insight into the errors.
+The all 1's pattern is the outlier, having no errors during the entire test. That, combined with the all 0's pattern having abnormal amounts of errors, we must assume that the cause of the errors is misinterpreting 0's to be 1's. In other words, the sampling timing is not the inherent cause of the errors. Judging from the bits, only the data bits(15:0) have errors, but other than that, no obvious pattern gives us more insight into the cause of the errors.
 
 A system's reliability can be quantified by its \gls{mtbf}, which determines the time span between faults occurring in a system\cite{mtbf_intro}. If we assume random values are being read, then from \autoref{fig: rand_bit_rate}, we can assume on average, one error occurs for every 1000 USART transactions. From \autoref{ssec: con_timing}, it was calculated that one transmission from control software to microcontroller took 288 $\mu$s, this means we can expect the \gls{mtbf} of one \gls{usart} link to be:
 
@@ -195,7 +194,7 @@ The \gls{mtbf} of the \gls{pcs}-system will be approximately 7 ms, which is unac
 
 
 \subsection{Baud rate error rate}
-
+\label{ssec:baud_error}
 Another aspect of the \gls{pcs}-prototype that is tested is using different baud rates for the transmission between \gls{fpga} and microcontroller. If erroneous bits is caused by the sampling not hitting the falling edge of the clock, reducing the baud rate should improve the error rate, giving more time for sampling each bit. We observed in the previous section that there were an error rate of about 0.1\% for the data bits. This was tested with a baud rate of 921600. A test was performed to assess whether a lower baud rate improves the bit error rate. We can manually change the baud rate used in the transmission by writing to a register in the global module in the MB Hub. The result of the test is given in \autoref{fig: baud_error}.
 
 \begin{figure}[!ht]

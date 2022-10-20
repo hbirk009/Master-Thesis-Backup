@@ -253,7 +253,44 @@ The board measures DVDD, AVDD, PWELL, and temperature, and the microcontroller h
 The microcontroller has three control registers; writing to the registers allows control software to execute custom functions built into the microcontroller. This would allow us to perform relatively complex functions without transmitting many data packets through the \gls{pcs}. Functions such as checking for abnormal current consumption in the strings could be performed significantly faster with a custom function on the microcontroller. The control register feature is only in a conceptual state, and it has not been fully implemented in the current microcontroller design. CTRL1 register only has a few functions for resetting register values implemented; CTRL2 and CTRL3 are reserved for future use.
 
 
-The microcontroller has two registers for managing errors, "error count" and "error message". These registers keep track of the number of errors that have occurred and the error codes. Each error code corresponds to an error message, which is given in the address map of the microcontroller. The error message register can be reset by writing 0x00 to the error count register.
+The microcontroller has two registers for managing errors, "error count" and "error message". These registers keep track of the number of errors that have occurred and the error codes. Each error code corresponds to an error message, which is given in \autoref{tab:errors}.
+\begin{table}[h]
+
+\centering
+
+\begin{tabular}{||c c p{7.5cm} ||}
+ \hline
+ Error name & Error code & Description \\ [0.5ex] 
+ \hline\hline
+ Temperature limit reached & 0x02 & The ADC value is reported to be above
+the temperature set by the TEMPERATURE\_LIMIT register. \\ 
+ \hline
+ DVDD critical current & 0x01 & Critical current reached on DVDD line. \\ 
+ \hline
+ DVDD warning current & 0x03 & Warning current reached on DVDD line. \\
+ \hline
+ AVDD critical current & 0x04 & Critical current reached on AVDD line. \\ 
+ \hline
+ AVDD warning current & 0x05 & Warning current reached on AVDD line. \\ 
+ \hline
+ PWELL critical current & 0x06 & Critical current reached on PWELL line. \\ 
+ \hline
+ PWELL warning current & 0x07 & Warning current reached on PWELL line. \\ 
+ \hline
+ Write/Read denied & 0x08 & Tried to write or read a register that should not have been read or written. \\ 
+ \hline
+String current error & 0x09 & Large current draws from the strings recorded.\\
+ \hline
+Enable scan error & 0x0A & Large current draws from a single string recorded during the enable scan.\\ [1ex] 
+ \hline
+
+\end{tabular}
+\caption{Error codes belonging to the microcontroller software.}
+\label{tab:errors}
+\end{table}
+\FloatBarrier
+
+The error message register can be reset by writing 0x00 to the error count register.
 
 The correct procedure to read all errors would be to first read the number of errors from the error count register. The number of errors determines how many bytes of the error message register to read; when that is done, the procedure writes 0x00 to the error count register.
 

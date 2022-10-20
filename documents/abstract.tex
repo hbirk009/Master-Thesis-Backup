@@ -2,24 +2,27 @@
 
 \begin{document}
 
-\section{Abstract}
-Cancer is the second most prevailing cause of death in the world, behind cardiovascular diseases. It was reported 14 million new cases of various cancers worldwide in 2019.
-\notinmain{need a ref for this}
-Radiation therapy has become one of the most common treatments against cancers and prevent its growth and is often used in conjunction with surgery and chemotherapy. Using radiation therapy is attractive due to it being a non-invasive procedure and it is able to accurately destroy tumours by focusing the radiation on the tumour. The drawback to this is that a large amount of the energy sent into the patient is delivered to the healthy tissue in front and behind of the tumour as well, damaging it. This can be alleviated by focusing many low-energy beams from several angles on the tumour, spreading out the dose delivered to healthy tissue. 
-A Computed Tomography(CT)-scan is often used to image a patient's insides before performing radiation therapy. A CT scan measures the stopping power of the tissue using photons and is a crucial part of calibrating the radiation dose.
-Radiation therapy is not risk-free, since the patient still receives a large amount of damaging radiation to healthy tissue. Particle Therapy is a new cancer treatment that seeks to use particles, instead of x-rays to destroy tumours in a patient. Common particles used are protons or heavy carbon ions. Particles have the advantage of being easy to control where they deposit their energy due to a phenomenon known as the "bragg-peak". This allows us to deliver fatal doses to the cancerous tumour, without harming the patient.
-However, a normal CT scan measures the stopping power of photons going through the patient, not particles, meaning it will be unable to give a high precision data for calibrating in particle therapy using protons. 
-The University of Bergen is currently working on developing a proton-Computed-Tomography scanner. Using protons to measure the stopping power gives us a higher precision when calibrating proton doses in the patient.
+\normalsize
+ \vspace*{40pt}
+ \begin{center}
+
+\textbf{Abstract}\\ 
+
+\hspace{10pt}
+
+\end{center}
+\normalsize
+The ProtonCT-project is a collaboration established at the University of Bergen and several institutions worldwide to create a prototype pCT-scanner. The pCT-scanner would be used to improve dosimetry plans for proton therapy, by measuring the relative stopping power of the protons, instead of calculating it using a traditional CT-scan.
+
+The prototype employs a Digital Tracking Calorimeter to measure the energy of the protons. This calorimeter is distinct in its design; it comprises 43 layers of pixel sensors. The pixel detectors were developed for the ALICE project by CERN. Each layer is comprised of 12 strings of ALPIDE chips, where a string is 9 ALPIDE chips mounted on a flex cable. These layers can track the trajectory and measure the energy of protons, which can be used to measure the relative stopping power. 
+
+The power delivery to the 43 layers of the calorimeter is still under development. Currently, a Monitoring Board is used to deliver the power to the strings and monitor their current consumption, voltage levels, and temperature. This thesis presents a control system solution for the power delivery system. This solution employs system design methodology to create a robust and modular design that can configure and monitor the power delivery to the layers. IPbus, a reliable communication protocol developed at CERN, is used to transmit data between the components of the power delivery system. Several levels of API abstraction have been designed to interface with IPbus and perform various functions, such as configuring the Monitoring Board and monitoring the measurements from the board.
+
+Database systems have been developed to store data from the configuration and monitoring processes. A web interface has been deployed that gives the user an overview of the monitoring data. Lastly, GUIs have been developed to serve as the interface between the user, the databases and the Monitoring Board.
+
+Tests and verification were performed of the power control system, and the results showed that the control system fulfilled the timing requirements for this project. Finally, a discussion is made on the structure of the control system. The discussion covers the structure of the control system and how it can be reused and expanded upon to cover the other systems of the pCT-project.
 
 
-
-\notinmain{Particle therapy is a non-invasive method of treating cancerous tumours in a patient by depositing large amount of energy in one single area of the body. This is done by sending protons or ions that deposits their energy as they move through the tissue, effectively destroying the targeted cells. A major challenge with x-ray treatment is destroying the tumour without killing the tissue around it. Tumours can form close to sensitive organs, like the heart, which makes x-ray therapy very risky procedure. Particle therapy avoids this issue due to how particles deposit their energy as they move through tissue. Most of the energy from particles is deposited as it is being stopped in the medium. This area where most of the energy is deposited is known as the bragg peak. This allows us to target the tumour with particle beams while leaving the tissue in front and back of the tumour unscathed. To properly adjust this bragg peak to the location of the tumour, it is necessary to know the stopping power of the tissues in the body. A CT scan is normal procedure for this purpose, but the university of Bergen is working on a project to develop a proton CT scanner prototype that promises to be even more precise in its measurements.} 
-
-The pCT scanner employs several sensors to detect the energy levels of the protons entering it. The sensor is comprised of 43 layers, each layer comprised of 12 strings, where each string contains several chips used for detection. The PSU is responsible for delivering current to the strings and at the same time protect the staves if they draw too much current, or reach too high temperatures. The purpose of this thesis will be about designing, testing, and verifying the configuration and monitoring system for the power supply unit used in the pCT project. To tackle sending and retrieving data, an FPGA is used to handle the transactions between the layers of pCT and the client. IPbus, a reliable and well tested bus-protocol is used to communicate between client and FPGA using Ethernet protocol.
-
-A configuration system is required for powering on and configuring threshold values for the PSU, and a monitoring system is required for diagnosing the pCT during a run and storing relevant data for a period of time. Both of these systems require a database, GUI and an API for accessing the registers on PSU. All this needs to be designed and tested to see if it meets the demands of this project.
-
-The overall system must be designed in a general and modular fashion, allowing it to be easily modified and handled by different people. Additionally, the user interface must be straight forward and easy to use, so that the user does not require any knowledge of the inner workings of the system to use it.
 
 
 

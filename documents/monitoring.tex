@@ -180,7 +180,7 @@ During the monitoring operation, the temperature must be measured, as well as th
 The read speed of IPbus is assumed to be 250 microseconds in this calculation. We can now assume that one poll of all measurements will approximately take 88 milliseconds. The amount of data points retrieved per second will then be:
 
 \begin{equation} \label{eqn:data_points_per_second}
-\frac{1}{0.088264}*8*43 =  22.659 * 8*43 \approx 3897
+\frac{1}{0.088}*8*43 =  11.33 * 8*43 \approx 3897
 \end{equation}
 
 The monitoring system polls all measurements approximately 23 times every second, which leads to retrieving approximately 3897 data points every second. The sampling rate is then 23 times per second, which is acceptable for our use.
@@ -238,30 +238,30 @@ InfluxDB features several write options for its Python client: Synchronous, Asyn
 
 The batching size can be customized by the user, but the optimal batch size for influxDB is 5000\cite{influx_batching}. The drawback of the batching is that data will not be sent until the batch is full. A large batching size can lead to long wait times until the data is sent to the database, but this is not a problem if we keep a batch size 5000. The database would get updated about every second in this instance.
 
-We can compare the speed of different batching sizes by inserting a specified amount of data points into the database and record the time taken. \autoref{tab:specs} shows off the time difference between 5, 50, 500, 5000, 50 000 batch size.
-
+We can compare the speed of different batching sizes by inserting 43000 data points into the database and record the time taken. \autoref{tab:specs} shows off the time difference between 5, 500, and 5000 batch size.
 \begin{table}[h]
 \centering
-\begin{tabular}{||c c c||} 
+\begin{tabular}{||c c||} 
  \hline
- N/A & N/A & N/A \\ [0.5ex] 
+ Write option & Write speed (43000 points)\\ [0.5ex] 
  \hline\hline
- Write speed & 38.2s & 5.1s \\ 
+ Synchronous & 1151s \\ 
  \hline
- System Load & 7 & 78  \\
+ Batching(n = 50) & 10s  \\
  \hline
- mean CPU Usage & 545 & 778 \\
+ Batching(n = 500) & 4s \\
  \hline
- 4 & 545 & 18744\\
- \hline
- 5 & 88 & 788\\ [1ex] 
- \hline
+ Batching(n = 5000) & 2s\\ [1ex]
+\hline
 
 \end{tabular}
-\caption{\label{tab:specs} INCOMPLETE}
+\caption{\label{tab:specs} Recorded speeds of inserting 43000 data paints into InfluxDB using different write options in the Influx Python API.}
 \end{table}
 \FloatBarrier
 
+The results from the table shows that the synchronous option is substantially slower than the batching options. The results also show that a higher batch size is faster, but there is diminishing returns past 500. 
+
+A large batch size could affect how quickly the values are inserted into the database, since the \gls{api} will wait until the entire batch is filled up before sending, but this not an issue if we use the recommended batch size of 5000. The monitoring \gls{api} polls approximately 3897 values each second, meaning a batch of 5000 will be filled up every 1.3 second.
 
  
  
@@ -282,19 +282,19 @@ We can compare the speed of different batching sizes by inserting a specified am
 \end{figure}
 \FloatBarrier 
  
-The filter starts with a "snapshot" value, point A in the figure, and sets two restrictions on the next points which is defined by the two parameters "ExMax" and "ExDev". "ExDev" defines the deadband of the filter, all points that appear in the deadband is considered noise and are removed from the set. If a point is recorded outside the deadband, then that point becomes the new "snapshot" value that defines a new deadband around it. The "ExMax" attribute determines the time span allowed between two points. If no new values exceeding the deadband is recorded for an "ExMax" amount of time, then the next data point is kept and set to be the new "snapshot" value, regardless if it was in the deadband of the previous snapshot. This is done to prevent too large gaps between recorded data points. Lastly, when a data point exceed the deadband, the previous point will be retained, in the case of \autoref{fig: osisoft_exception}, point E passes the filter because point F exceeded the deadband. This is done to retain the shape of the graph, \autoref{fig: osisoft_last_point} shows a slide from OSIsoft's summary of exception and demonstrates how not retaining the last point can affect the graph.
+The filter starts with a "snapshot" value, point A in the figure, and sets two restrictions on the next points which is defined by the two parameters "ExMax" and "ExDev". "ExDev" defines the deadband of the filter, all points that appear in the deadband is considered noise and are removed from the set. If a point is recorded outside the deadband, then that point becomes the new "snapshot" value that defines a new deadband around it. The "ExMax" attribute determines the time span allowed between two points. If no new values exceeding the deadband is recorded for an "ExMax" amount of time, then the next data point is kept and set to be the new "snapshot" value, regardless if it was in the deadband of the previous snapshot. This is done to prevent too large gaps between recorded data points. Lastly, when a data point exceed the deadband, the previous point will be retained, in the case of \autoref{fig: osisoft_exception}, point E passes the filter because point F exceeded the deadband. This is done to retain the shape of the graph, \autoref{fig: osisoft_last_point} shows graph that demonstrates how not retaining the last point can affect the shape of the graph.
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[width=12cm, scale=4]{images/osisoft_last_point.jpg}
-    \caption{Slide showing the projected graph depending on if we retain the last point before the snapshot value or not\cite{osisoft_exception}}
+    \includegraphics[width=12cm, scale=4]{images/exception_process_2.pdf}
+    \caption{Graph showing the projected graph depending on if we retain the last point before the snapshot value. Based on slide from\cite{osisoft_exception}}
     \label{fig: osisoft_last_point}
 \end{figure}
 \FloatBarrier 
  
- As seen from the figure, the data will be misinterpreted if we do not consider the data point before the new snapshot value. 
+The graph displays the exception filtering method, where point B to E is not included in the set due to them being in the deadband, which gives us the dotted graph. The orange graph keeps point E in its set, since it was the previous value of point F. The dotted graph would give us the impression of a steady increase in the temperature from point A to point F, even though that is not the case. The orange graph keeps one extra value in its set, and in return, it is a more accurate representation of the measurements.
  
- Lastly we can mention the compression technique which uses a "swinging door" algorithm to remove redundant data points. The process makes a line between two points and remove the next data points who's angle in relation to this line is not above a certain threshold. This process is more complicated to implement than the exception test and it is currently seen as unnecessary for this project. The compression test can be revisited in the future if database performance becomes a problem.
+ Lastly we can mention the compression technique, which uses a "swinging door" algorithm to remove redundant data points. The process makes a line between two points and remove the next data points who's angle in relation to this line is not above a certain threshold. This process is more complicated to implement than the exception test and it is currently seen as unnecessary for this project. The compression test can be revisited in the future if database performance becomes a problem.
  
  Implementing custom filters for our data points means that we must be able to manipulate the data points in a clear fashion before sending them to the Influx database. Pandas dataframe is a two dimensional data structure with rows and axes for efficiently setting up tables of data and manipulating it. InfluxDB is also compatible with Panda dataframes and can be inserted directly into the database. By inserting the data into Panda dataframe, we can analyze the data and modify it as we wish, this allows us to efficiently create custom filters in Python. A custom class, \textit{panda\_filter}, is responsible for managing the pandas dataframes and contain functions to format the inserted data. The class contains three pandaframes, one for each measurement type, the measurements are separated so that the data points can be modified without affecting the other measurement types. The dataframe consists of a column containing the actual data, and a column for the timestamp. \autoref{fig: panda_example} shows an example of the structure of the panda dataframes. 
  

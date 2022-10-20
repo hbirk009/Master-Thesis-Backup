@@ -43,45 +43,59 @@ The image shows field devices, connected to \gls{ppc}s that controls them. The \
 
 The life cycle of a \gls{scada}-system project is important to understand in order to create a similar system. The methods involved in creating a typical \gls{scada}-system ensures the software and its documentation becomes well organized and structured.
 
-\subsubsection{Project specifications}
-
-Before starting to design a \gls{scada}-system, the requirements of the project must be understood. This includes, but are not limited to\cite{scada_design}:
-
-\begin{itemize}
-    \item Diagram of system architecture
-    \item Specifications for field controllers and Human to Machine interface
-    \item Identification of input and output signals for each controller
-
-\end{itemize}
-
- Diagrams of the process and the instruments in the the system gives an overview and understanding of the project specifications. One must understand what function the \gls{ppc} and the \gls{hmi} will have in the system.  the input and output signals of the controllers must be specified, which is the measurements retrieved from the controllers, and the configuration values of the controllers.
 
 \subsubsection{Input and output signals}
 
-A list must be made of the input and output signals of a system. Knowing all signals to be used in a system will give us an estimate of the requirements of the system as well as aid in the development process. 
-The input and output signals determines the configuration and monitoring processes. The input signals affect how the \gls{ppc} will control the field devices. These can be discrete values which determines if a valve is open or closed, or it can be analog signals which determines voltage thresholds in a circuit. The output signals are the values to be monitored by the \gls{ppc} which are polled by the \gls{hmi}, and stored in a database. These are usually measurements from a sensor, such as temperature, voltage, or flow.
+ First, the process areas and the field signals must be identified. The process area denotes a specific area of the system which is responsible for one aspect of the operation. Each process area requires a \gls{ppc} to manage and a network to connect it to the rest of the system.
+
+The field signals encompasses all input and output signals in a system. Knowing all signals in a system will give us an estimate of the requirements of the system as well as aid in the development process. The input and output signals determines the configuration and monitoring processes. The input signals affect how the \gls{ppc} will control the field devices. These can be discrete values which determines if a valve is open or closed, or it can be analog signals which determines voltage thresholds in a circuit. The output signals are the values to be monitored by the \gls{ppc} which are polled by the \gls{hmi}, and stored in a database. These are usually measurements from a sensor, such as temperature, voltage, or flow.
+
+
+\subsubsection{Defining PPC operations}
+
+The functionality of the \gls{ppc} should be defined and documented in such a way that the reader can understand how the monitor and control operations are performed. The documentation of the \gls{ppc} aids in the development of the workstation software, which must interface with it.
 
 \subsubsection{Developing Workstation software}
 
 The software to be used in the Workstations is comprised of two parts, the graphical display of the system, which serves as the \gls{hmi}, and the databases containing information of the \gls{ppc}s. The Graphical display must be designed in such a manner that the user can quickly and easily survey and control the system. Security must also be considered in the design, certain functions that can change parameter values should ideally be only for available to administrative users. This is to reduce the chance of equipment or instruments being damaged by inexperienced users.
 
-The database software must store configuration values for the \gls{ppc}s, as well as storing the monitoring data from them. There is usually two databases maintained for this purpose, one for configuration, and one for monitoring. Communication software must be developed that regularly polls data from the \gls{ppc} and inserts it into the monitoring database. Likewise, the configuration software must retrieve data from the configuration database and send the data to the \gls{ppc}.
+The database software must store configuration values for the \gls{ppc}s, as well as storing the monitoring data from them. There is usually two databases maintained for this purpose, one for configuration, and one for monitoring. Communication software must be developed that regularly polls data from the \gls{ppc} and inserts it into the monitoring database. Likewise, the configuration software must retrieve data from the configuration database and send the data to the \gls{ppc}. The tag values used in the database should be meaningful and standardized, making it easy for users to get an overview of the data.
 
 
 
 \subsubsection{Software documentation}
-Another important aspect of such a control system is having a consistent programming standard and complete software documentation. \gls{scada} and similar systems often have a long shelf time, and a well documented system will make maintenance and work in the future be much easier. In general, starting with good software documentation and expanding upon it during the project development will lead to sufficient documentation of the entire system.
+Another important aspect of such a control system is having a consistent programming standard and complete software documentation. \gls{scada} and similar systems often have a long shelf time, and a well documented system will make maintenance and work in the future more manageable. In general, starting with good software documentation and expanding upon it during the project development will lead to sufficient documentation of the entire system.
 
-A consistent programming standard helps in debugging and in expanding functionality of the system. \gls{oop} is a very common programming paradigm that is used to give structure to programs and increase reusability and maintainability of the code. Systems designed to manage large data acquisition, such as a \gls{pet}-scan system, have in the past used \gls{oop} to design and manage large programs\cite{pet_control_system}, this suggest that this programming structure is viable for the design of the control system in the \gls{pct}-project.
+Good documentation of a \gls{scada}-system includes:
+
+\begin{itemize}
+    \item Description of database architecture, along with an explanation of the tag values.
+    \item Description of the PPC logic, including functions and signals involved.
+    \item An operational manual for the displays and functions available to the user.
+    \item A reference of the displays, programs, and databases used in the application.
+\end{itemize}
 
 
 \subsection{Software design}
 
+Software design can be a complex task when developing for a large system. Certain measures should be taken to assure the software development and maintenance of it becomes cumbersome and unmanageable. Using programming standards and conventions can drastically increase the readability and the ease of expanding the software. Additionally, using version control systems like Git and GitHub makes maintaining the code in a project with multiple people straightforward.
+
+\subsubsection{Object Oriented Programming}
+
+A consistent programming standard helps in debugging and in expanding functionality of the system. \gls{oop} is a very common programming paradigm that is used to give structure to programs and increase reusability and maintainability of the code.
+
+\gls{oop} have four basic principles when creating classes in programs: Abstraction, Encapsulation, Inheritance, Polymorphism. Abstraction is based on creating an interface of an object or class that allows outside source to interact with the object without knowing the inner implementation of the class. This reduces the program complexity and serves as an intuitive segmenting of the software.
+
+Encapsulation declare that only the class itself should be able to manipulate and interact with its private variables. This assures that the classes is not dependent on other class implementations which increase the modularity of the software. Inheritance and polymorphism is closely related to each other, they describe how classes can be derived from other classes, "inheriting" its functions, and how the inherited functions can be redefined, altering the behaviour of the class.
+
+
+These principles guide the developer to create modular and structured software which is reusable, easy to maintain, and modify. Abstraction is the most important principle, and encapsulation relates to how to create a good abstraction of the system. These two principles will be used the most in the work of this thesis. Systems designed to manage large amounts of data acquisition, such as a \gls{pet}-scan system, have in the past used \gls{oop} to design and manage large programs\cite{pet_control_system}, this gives more credence to use \gls{oop} in similar projects.
+
 \subsubsection{Git and GitHub}
 
-The use of the Git and GitHub tools is essential today to manage your code, maintain it and also as a version control system. Git is another method used to ensure that the code is easy to use and be maintained, now and in the future. The version control system is also essential for verifying the code, mistakes can be made, but a stable version of the software will always be available at the GitHub. GitHub also enables a better workflow with co-developers or mentors, allowing easy access to the source code and issues can be made. There is currently only one master branch of the repository in the Git system, this is due there only being one developer so branching is not yet needed.
+The use of the Git and GitHub tools is essential today to manage the project code and maintain it as a version control system. Git is another method to ensure that the code is easy to use and maintain, now and in the future. The version control system is also essential for verifying the code; Mistakes can be made, but a stable version of the software will always be available in previous versions on Git or GitHub. GitHub also enables a better workflow with co-developers or mentors, allowing easy access to the source code and giving feedback. 
 
-The GitHub repository contains a README-file which contains all practical information about the repository and the goals of the project. This includes information about the configuration and monitoring process, as well as a user guide to start the databases and \gls{gui}. An example of the README-file is given in \autoref{fig: readme}
+The GitHub repository used for this thesis contains a README-file which contains all practical information about the repository and the goals of the project. This includes information about the configuration and monitoring process, as well as a user guide to start the databases and \gls{gui}s. An example of the README-file is given in \autoref{fig: readme}
 
 
 \begin{figure}[!ht]
