@@ -4,25 +4,23 @@
 
 \section{Configuration System}
 \label{section: configuration}
-\textit{This section goes over the general requirements of a configuration system for the pCT project and how it is implemented. It will go over the GUI designed for the configuration and its functionality, along with the API it uses to receive and transmit data. A database solution is presented, using MongoDB to store configuration sets, lastly, a ramp-up algorithm is described and implemented that is to be used in the powering on sequence of the \gls{dtc} \notinmain{ha et underkapittel om mongoDB database og data oppsett: json-format etc.}}
+\textit{This section goes over the general requirements of a configuration system for the pCT project and how it is implemented. It will go over the GUI designed for the configuration and its functionality, along with the API it uses to receive and transmit data. Next, a database solution is presented, using MongoDB to store configuration sets; lastly, a ramp-up algorithm is described and implemented that is to be used in the powering-on sequence of the \gls{dtc}.}
 
 
+ Seven registers on the microcontroller determine the threshold values for DVDD, AVDD, PWELL, and temperature. The configuration system must be able to configure the threshold registers quickly, and use the enable signals to power on the strings.
 
-\subsection{Overview}
-The microcontroller on the \gls{mb} is responsible for directly monitoring and controlling the power delivery to the 12 strings of its respective layer. It contains registers that allow for modifying PWELL voltage, custom functions accessed by the CTRL registers, and threshold values for each measurement. The microcontroller has eight registers that handle how it will monitor the 12 strings for its respective layer. Seven registers determine the threshold values for DVDD, AVDD, PWELL, and temperature. The last register is the enable signal, which determines how many strings the board will turn on. DVDD, AVDD, and PWELL have two threshold levels, threshold 1 is a warning threshold giving an error message, and threshold 2 is a critical threshold that will automatically turn off all strings if it is exceeded. Temperature only has one threshold value, and the microcontroller will turn off the strings if it is exceeded. The address map of the microcontroller is given in appendix \ref{appendix: register_map}.
-
-Each layer can have different nominal threshold values for voltage and current, and therefore, it is necessary to be able to change these values as we test the strings. A complete set of threshold values for all strings in each layer of the \gls{dtc} will be referred to as a configuration set. The configuration sets must be stored in a database, and MongoDB was chosen for storing the sets; we will discuss the database more in \autoref{ssec: mongo}.
+Each layer can have different nominal threshold values for voltage and current, and therefore, it is necessary to be able to change these values as we test the strings. A complete set of threshold values for all strings in a layer of the \gls{dtc} will be referred to as a configuration set. The configuration sets must be stored in a database, and MongoDB was chosen for storing the sets; we will discuss the database more in \autoref{ssec: mongo}.
 
 All this leads to a requirement for a user-friendly configuration system that can configure the microcontrollers through IPbus, store configuration sets, and power on the \gls{dtc}. Furthermore, these parts must be developed modular and generic to make the system scalable and easy to modify.
 
 \subsection{Configuration API}
 \label{ssec: mcu_api}
-IPbus sends and retrieves information between the control software and the MB Hub. IPbus has a software library, uHAL (Hardware Access Library), that provides end-user API for C++ and Python. For this project,  Python is used to interface with uHAL and IPbus. This \gls{api} can issue read and write commands to the IPbus module on the\gls{fpga} and dispatch these commands in a single packet. \autoref{ssec: IPbus} talks more in detail about the IPbus software and how to implement it in Python. uHAL allows us to send and receive data, but this \gls{api} is not sufficient for communicating with the microcontroller; there must be an additional interface that has functions for our specific FPGA design, the microcontroller on the \gls{mb}. Following the principles of \gls{oop}, it is natural to encapsulate the properties of the API into two interfaces, one for the MB Hub and one for the microcontroller on the \gls{mb}. Additionally, the configuration system requires several high level processes to operate, and therefore a separate configuration \gls{api} is required.
+IPbus sends and retrieves information between the control software and the MB Hub. IPbus has a software library, uHAL (Hardware Access Library), that provides end-user API for C++ and Python. For this project,  Python is used to interface with uHAL and IPbus. This \gls{api} can issue read and write commands to the IPbus module on the\gls{fpga} and dispatch these commands in a single packet. Section \ref{ssec: IPbus} provides a detailed discussion of the IPbus software and how to implement it in Python. uHAL allows us to send and receive data, but this \gls{api} is not sufficient for communicating with the microcontroller; there must be an additional interface that has functions for our specific FPGA design, the microcontroller on the \gls{mb}. Following the principles of \gls{oop}, it is natural to encapsulate the properties of the API into two interfaces, one for the MB Hub and one for the microcontroller on the \gls{mb}. Additionally, the configuration system requires several high-level processes to operate, and therefore a separate configuration \gls{api} is required.
 
 \subsubsection{IPbus API}
-The IPbus \gls{api} contains functions for read and write commands using uHAL, broadcast functionality using the global module, and enabling/disabling the com modules for individual layers. This interface Python class is named "ipbus low interface".
+The IPbus \gls{api} contains functions for read and write commands using uHAL, broadcast functionality using the global module, and enabling/disabling the com\_modules for individual layers. This interface Python class is named "ipbus low interface".
 
-An important part of the \gls{api} is the "issue" functions. \autoref{ssec: IPbus} discusses how IPbus benefits from packing data in larger payloads before dispatching them, which is the purpose of the "issue" functions. The "issue" functions loads the data request in a payload without sending it to the MB Hub. This can optimize the communication chain between the control software and the microcontroller by limiting the number of network dispatches performed.
+An essential part of the \gls{api} is the "issue" functions. \autoref{ssec: IPbus} discusses how IPbus benefits from packing data in larger payloads before dispatching them, which is the purpose of the "issue" functions. The "issue" functions loads the data request in a payload without sending it to the MB Hub. This can optimize the communication chain between the control software and the microcontroller by limiting the number of network dispatches performed.
 
 \subsubsection{Microcontroller API}
 
@@ -55,13 +53,13 @@ The configuration process requires several functions to load configuration sets 
 \end{figure}
 \FloatBarrier
 
-The "config\_api" class contains a "db\_manager" object and "mcu\_api" object; they handle database operations and communicate with the microcontroller, respectively. Setting up the configuration system only requires the user to instantiate a \textit{config api} object in a python script. This class \gls{api} has several functions for verifying handshakes, retrieving data from the database, and performing the ramp-up process. \textit{config api} has two functions for issuing configuration commands down to the \gls{dtc}, stage 1 and stage 2. These two will be discussed more in \autoref{ssec: power_algo}. The \textit{config\_online\_layers}-function is the main function of the \gls{api} that performs the entire configuration process.
+The "config\_api" class contains a "db\_manager" object and "mcu\_api" object; they handle database operations and communicate with the microcontroller, respectively. Setting up the configuration system only requires the user to instantiate a \textit{config\_api} object in a python script. This class \gls{api} has several functions for verifying handshakes, retrieving data from the database, and performing the ramp-up process. \textit{config\_api} has two functions for issuing configuration commands down to the \gls{dtc}, stage 1 and stage 2. These two will be discussed more in \autoref{ssec: power_algo}. The \textit{config\_online\_layers}-function is the main function of the \gls{api} that performs the entire configuration process.
 
 
 
 \subsection{Powering algorithm}
 \label{ssec: power_algo}
-Powering on and configuring the strings of the \gls{dtc} comes with its own challenges. Tasks such as enabling layers, sending configuration data and verifying handshakes must be performed every time the system is turned on. The calorimeter is made of 43*12 strings that all consume a significant amount of current. There are several constraints that must be considered while powering on such a system. Powering on all strings at once could cause a power spike that could damage equipment if not handled correctly. A solution to this is to develop a ramp-up algorithm that turns on each string one by one, gradually increasing the power level of the strings. 
+There are several procedures and constraints for powering and configuring the strings of the DTC. Tasks such as enabling layers, sending configuration data and verifying handshakes must be performed every time the system is turned on. The calorimeter is made of 43$\cdot$12 strings that all consume a significant amount of current. Several constraints must be considered while powering on such a system. Powering on all strings at once could cause a high inrush current that could cause a system malfunction if handled incorrectly. A solution to this is to develop a ramp-up algorithm that turns on each string one by one, gradually increasing the power level of the strings. 
 
 The algorithm must perform these tasks:
 
@@ -69,14 +67,14 @@ The algorithm must perform these tasks:
     \item Get the configuration values from the database.
     \item send write requests to every layer.
     \item verify handshake values from the write requests.
-    \item Turn on each string sequentially and verify they do not get turned off by the microcontroller. This is to limit the current consumption of the strings while turning them on
+    \item , turn on each string and set threshold levels sequentially, and verify they do not get turned off by the microcontroller. This is to limit the current consumption of the strings while turning them on
 \end{itemize}
 
-The configuration \gls{api} contains functions that perform handshakes and stages write commands to IPbus, and the \textit{config online layers}-function wraps these together to perform the configuration. The stage 1 and stage 2 functions is responsible for retrieving the values from the database and issuing the write requests for the specified layer. Stage 1 issues the write requests for the registers in the database made of only a single value, stage 2 handles the enable signal and the threshold values made of a dictionary.
+The configuration \gls{api} contains functions that perform handshakes, and stages write commands to IPbus, and the \textit{config online layers}-function wraps these together to perform the configuration. The stage 1 and 2 functions are responsible for retrieving the values from the database and issuing the write requests for the specified layer. Stage 1 issues the write requests for the registers in the database made of only a single value; stage 2 handles the enable signal and the threshold values made of a dictionary.
 
-The reasoning behind having two stages is twofold, to prevent unnecessary write operations and to ensure more readable, concise code. Only 4 of the 8 registers needs to be changed when a new string is turned on, the three threshold values for AVDD, DVDD and PWELL, as well as the enable signal, which turns on the next string. If a single function issued all the write-requests, then we would have to configure twice as much registers each time a string turned on. Stage 1 issues the write requests for the 4 registers that is static during the ramp-up process, while stage 2 issues requests to the 4 registers that changes for each string. Important to note that the global module is not used for the configuration process. The layers can have different threshold levels and therefore they must be configured individually.
+The reasoning behind having two stages is twofold, to prevent unnecessary write operations and to ensure more readable, concise code. Only four of the eight registers need to be changed when a new string is turned on, the three threshold values for AVDD, DVDD and PWELL, and the enable signal, which turns on the next string. If a single function issued all the write requests, we would have to configure twice as many registers each time a string turned on. Stage 1 issues the write requests for the four static registers during the ramp-up process, while stage 2 issues requests to the four registers that change for each string. Important to note that the global module is not used for the configuration process. The layers are assumed to have different threshold levels, so they are configured individually.
 
-The algorithm will first use stage 1 to configure all layers, then use the stage 2 function in a loop, to gradually turn on the strings and set appropriate threshold levels. A flowchart of configuring one layer is given in \autoref{fig: flow_chart}.
+The algorithm will first use stage 1 to configure all layers, then use the stage 2 function in a loop, to gradually turn on the strings and set appropriate threshold levels. A flowchart configuring one layer is given in \autoref{fig: flow_chart}.
 
 \begin{figure}[!ht]
     \centering
@@ -86,16 +84,16 @@ The algorithm will first use stage 1 to configure all layers, then use the stage
 \end{figure}
 \FloatBarrier
 
-Important to note the function loops through all online layers during stage 1 and stage 2. The flowchart describes how one layer is configured during the function.
+Important to note that the function loops through all online layers during stage 1 and 2. The flowchart describes how one layer is configured during the function.
 
-The left side of \autoref{fig: flow_chart} shows the flowchart of stage 1, where the warning threshold levels is set, along with temperature limit. Notice it is issuing all the commands first, then dispatches them and verifies handshake values afterwards.  The right side of \autoref{fig: flow_chart} shows stage 2, where it turns on the strings one-by-one. The \textit{error count} register from the microcontroller is checked at the end of the loop to assert whether any strings were turned off due to high currents. 
+The left side of \autoref{fig: flow_chart} shows the flowchart of stage 1, where the warning threshold levels are set, along with the temperature limit. All the commands are issued prior to being dispatched as a single packet. Finally, the handshakes are verified. The right side of \autoref{fig: flow_chart} shows stage 2, where it turns on the strings individually. The \textit{error count} register from the microcontroller is checked at the end of the loop to assert whether any strings were turned off due to high currents. 
 
-The flowchart checks for errors during configuration, but the error handling afterwards has not been fully implemented. Ideally, the error messages should be displayed to the user and also be logged in a database, including a severity grade of the error.
+The flowchart checks for errors during configuration, but the error handling afterwards has yet to be fully implemented. Ideally, the error messages should be displayed to the user and also be logged in a database, including a severity grade of the error.
 
 
-\subsection{Mongo Database}
+\subsection{MongoDB Database}
 \label{ssec: mongo}
-As previously mentioned, the database chosen for the configuration is MongoDB. The reason it was chosen is due to it being a popular, open source, noSQL database, with Python API libraries. MongoDB is capable of storing large amounts of data, which is useful for storing many large configuration sets. The APIs will access the database through use of PyMongo library, containing functions for reading, writing and searching the database. The configuration of the readout-chips also implements MongoDB, and using the same database for both systems reduces the modular complexity of the configuration systems as a whole.
+As previously mentioned, the database chosen for the configuration is MongoDB. MongoDB was chosen because it is a popular, open-source, NoSQL database with Python API libraries. In addition, MongoDB is capable of storing large amounts of data, which helps store many large configuration sets. The APIs will access the database through the PyMongo library, containing functions for reading, writing and searching the database. The configuration of the readout chips also implements MongoDB, and using the same database for both systems reduces the modular complexity of the configuration systems.
 
 The hierarchy of a MongoDB database is shown in \autoref{fig: mongo_chart}.
 
@@ -107,7 +105,7 @@ The hierarchy of a MongoDB database is shown in \autoref{fig: mongo_chart}.
 \end{figure}
 \FloatBarrier
 
-Each database contains user defined collections that each store its own documents. In this project, there is two collections, "Configuration sets", and "Log messages". The former is for storing the different configuration sets and the latter stores the log messages from the \gls{gui}, as is discussed in \autoref{ssec: cgui}.
+Each database contains user-defined collections that each store their documents. For example, there is currently one collection in the database called "Configuration sets" in this project.
 
 MongoDB uses JSON as the template for its databases, JSON being a widely used text-based data format for storing and transferring data. A typical example of a MongoDB JSON document is shown below in \autoref{fig: mongo_example}.
 
@@ -119,8 +117,7 @@ MongoDB uses JSON as the template for its databases, JSON being a widely used te
 \end{figure}
 \FloatBarrier
 
-A document contains fields, and each field contains a corresponding value. This value can be a number, string or a dictionary of sub fields, the address field in \autoref{fig: mongo_example} contains three fields with their own values.
-For our purpose, the format of the initial configuration set were not too complex, each field only need to contain a single value and they must be set values for each layer. Additionally, each configuration set must contain a "last updated" timestamp for the sake of documentation, and it must have a field for enabling the com-modules on the \gls{fpga}. Two iterations of the database format were made, the first iteration of this data format is shown in \autoref{fig: json_v1}
+A document contains fields, and each field contains a corresponding value. This value can be a number, string, or dictionary of subfields; the address field in \autoref{fig: mongo_example} contains three fields with their values. For our purpose, the format of the initial configuration set was as such: each field only needed to contain a single value, and each layer required its own set. Each configuration set must also contain a "last updated" timestamp for documentation, and it must have a field for enabling the com\_modules on the \gls{fpga}. Two iterations of the database format were made; the first iteration of this data format is shown in \autoref{fig: json_v1}.
 
 \begin{figure}[!ht]
     \centering
@@ -130,9 +127,9 @@ For our purpose, the format of the initial configuration set were not too comple
 \end{figure}
 \FloatBarrier
 
-Each set has a unique name and the configuration values are stored in dictionaries inside the "configuration values" field. The "configuration values" field contains a separate dictionary of each layer, containing the eight threshold values. Retrieving the information using Python is as simple as using a get command for the threshold values.
+Each set has a unique name, and the configuration values are stored in dictionaries inside the "configuration values" field. The "configuration values" field contains a separate dictionary of each layer, containing the eight threshold values. Retrieving the information using Python is as simple as using a get command for the threshold values.
 
-One of the challenges behind the ramp-up algorithm is that strings' current consumption can vary depending on the quality of the chips on the string. Some strings can use double the current consumption of others and implementing this into the ramp-up process would be next to impossible without having the information on the string's threshold levels. Therefore, the second iteration of the database contains individual threshold values for each stave to alleviate this problem. \autoref{fig: json_v2} shows an outline of this implementation of the database.
+One of the challenges behind the ramp-up algorithm is that strings' current consumption can vary depending on the quality of the chips on the string. Some strings can draw double the current compared to others, and implementing this into the ramp-up process would only be possible knowing the string's threshold levels. The second iteration of the database contains individual threshold values for each string to alleviate this current consumption problem. \autoref{fig: json_v2} shows an outline of this database implementation.
 
 \begin{figure}[!ht]
     \centering
@@ -142,19 +139,20 @@ One of the challenges behind the ramp-up algorithm is that strings' current cons
 \end{figure}
 \FloatBarrier
 
-This new iteration is similar to the first, but all the threshold 2 levels for PWELL, DVDD and AVDD is made of a dictionary of values for each string. It is not shown in \autoref{fig: json_v2}, but this format also has fields for last updated and COM modules enabled. The configuration API must sum these string values while performing the ramp-up process, leading to more logic on the software side, specifically for the configuration \gls{api}.
+This new iteration is similar to the first, but all the threshold 2 levels for PWELL, DVDD, and AVDD are dictionary objects containing values for each string. It is not shown in \autoref{fig: json_v2}, but this format also has fields for last updated and com\_modules enabled. The configuration API must sum these string values while performing the ramp-up process, leading to more logic on the software side, specifically for the configuration \gls{api}.
 
-Setting up the database format, and creating new sets is performed with a custom class named \textit{db\_manager}. This class contains functions for communicating with the Mongo database, creating new configuration sets and updating these sets with new values. All formatting of the data happens in this class, the Mongo database does not perform any special functions in regards to manipulating the stored data.
+Setting up the database format and creating new sets is performed with a custom class named \textit{db\_manager}. This class contains functions for communicating with the Mongo database, creating new configuration sets and updating these sets with new values. Although all data formatting happens in this class, the Mongo database does not perform any special functions in manipulating the stored data.
 
 
 
 \subsection{Configuration GUI}  
 \label{ssec: cgui}
-The configuration API contains many functions for setting up the configuration process and managing the Mongo database, but this class requires an end-user interface that not only allows for easily setting up configuration data, but is also user-friendly. A person with no knowledge of the underlying process behind the configuration must be able to load a configuration set from the database and start the configuration of the strings. A logical answer to this problem is to implement a \gls{gui} for the configuration system, but unlike the monitoring system, no specific \gls{gui} exists that is applicable to the configuration, and thus a custom-made \gls{gui} must be implemented.
+The configuration API contains many functions for setting up the configuration process and managing the Mongo database. However, this class requires an end-user interface that allows for quickly setting up configuration data and is user-friendly. A person with no knowledge of the underlying process behind the configuration must be able to load a configuration set from the database and start the configuration of the strings. A logical answer to this problem is to implement a \gls{gui} for the configuration system. However, unlike the monitoring system, no specific \gls{gui} exists that applies to the configuration, and thus a custom-made \gls{gui} must be implemented.
 
-The basic features the \gls{gui} requires is the ability to load configuration sets from the database and start the configuration with the push of a button. Additionally, the \gls{gui} must also have an "advanced"-tab that allows the user to directly create new configuration sets and insert them into the database, as well as being able to directly modify already existing sets.
+The primary feature the \gls{gui} requires is the ability to load configuration sets from the database and start the configuration with the push of a button. The \gls{gui} must also have an "advanced" tab that allows the user to create new configuration sets directly, insert them into the database, and modify existing sets.
 
-Building the \gls{gui} and designing it is performed using Qt Designer, and its Python library, PyQt5 is used to interface the \gls{gui} with our configuration \gls{api} and database. This tool was used to design the \gls{gui} because it is easy to work with and this tool has been used previously to create GUIs for the readout electronics, and this allows us to reuse code.
+Building the \gls{gui} and designing it is performed using Qt Designer, and its Python library, PyQt5, is used to interface the \gls{gui} with our configuration \gls{api} and database. This tool was used to design the \gls{gui} because it is easy to work with, and this tool has also been used previously to create GUIs for the readout electronics.
+
 
 The class chart for the configuration GUI is given in \autoref{fig: gui_chart}.
 
@@ -166,7 +164,7 @@ The class chart for the configuration GUI is given in \autoref{fig: gui_chart}.
 \end{figure}
 \FloatBarrier
 
-The GUI is made out of 4 custom python classes, the main class, \textit{config\_gui\_custom} is the main window the user will interact with. The other classes are the windows for creating new configuration sets, loading sets from the database, and setting the individual string threshold values. \textit{config\_gui\_custom} instantiates the configuration \gls{api} and database manager and connects their functions to the GUI buttons.
+The GUI is made out of 4 custom Python classes; the main class, \textit{config\_gui\_custom}, is the main window for the user. The other classes are the windows for creating new configuration sets, loading sets from the database, and setting the individual string threshold values. The \textit{config\_gui\_custom} instantiates the configuration \gls{api} and database manager and connects their functions to the GUI buttons.
 
 The main window of the GUI is shown in \autoref{fig: gui_window}, displaying the "basic" tab.
 
@@ -178,9 +176,9 @@ The main window of the GUI is shown in \autoref{fig: gui_window}, displaying the
 \end{figure}
 \FloatBarrier
 
-The window has buttons for loading a set from the database, creating a new set and inserting it into the database, and a confirm or cancel dialog buttons. Upper left of the window shows which configuration set is currently loaded. The window has a log window that informs the user of actions performed, errors, and confirmation messages. These log messages are timestamped and stored in a different collection in MongoDB, giving us more control of the configuration process a typical use case for the "basic" tab is loading set from the database, and then clicking OK, then clicking the "start configuration" button on the main hub GUI to start the configuration process.
+The window has buttons for loading a set from the database, creating a new set and inserting it into the database, and confirm or cancel dialogue buttons. The Upper left of the window shows which configuration set is currently loaded. The window has a log window that informs the user of actions performed, errors, and confirmation messages. These log messages are timestamped and stored in a different collection in MongoDB, giving us more control of the configuration process. A typical use case for the "basic" tab is loading a set from the database and then clicking the "start configuration" button on the main hub GUI to start the configuration process.
 
-Clicking the "Load set" button will open up the a dialog window, showing every set in the database.
+Clicking the "Load set" button will open up a dialogue window, showing every set in the database.
 
 \begin{figure}[!ht]
     \centering
@@ -190,7 +188,7 @@ Clicking the "Load set" button will open up the a dialog window, showing every s
 \end{figure}
 \FloatBarrier
 
-As shown in \autoref{fig: load_window}, the window shows every set along with a timestamp of when it was last updated. Choosing a set to load is done by clicking on the row of a set, and then pressing the "OK" button.
+As shown in \autoref{fig: load_window}, the window shows every set along with a timestamp of when it was last updated. Choosing a set to load is done by clicking on the set and pressing the "OK" button.
 
 The "Edit Config" tab allows for both reading and modifying the threshold values for each set. It is shown in \autoref{fig: edit_tab_window}.
 
@@ -202,51 +200,53 @@ The "Edit Config" tab allows for both reading and modifying the threshold values
 \end{figure}
 \FloatBarrier
 
-The threshold values can be set for each layer, as well as turning off and on the strings interactively by clicking on its corresponding colored box. The log window will alert the user when any changes are made to a configuration set. This tab is useful for making small changes to already existing sets, but requires the user to be knowledgeable about the structure of the configuration sets to edit them.
+The threshold values can be set for each layer, and enable signals for the strings can be changed interactively by clicking on their corresponding coloured box. The log window will alert the user when changes are made to a configuration set. This tab helps make small changes to existing sets but requires the user to know the structure of the configuration sets to edit them.
 
-The "Create set" button opens up a window similar to the "Edit Config" tab, allowing the user to create a new set. It is not possible to set different values for each layer while creating it, instead, the "Edit Config" tab can be used for that purpose after the set has been created.
+The "Create set" button opens a window similar to the "Edit Config" tab, allowing the user to create a new set. The user cannot set different values for each layer while creating it; instead, the "Edit Config" tab can be used afterwards to make edits.
 
 
 \subsection{Configuration Timing}
 \label{ssec: con_timing}
 
-Configuring the layers of the \gls{dtc} requires sending multiple write requests through the \gls{pcs} and this process can potentially take a significant time to perform. If the process is slow, then it will feel sluggish for the user, which impacts the user experience. Additionally, debugging the hardware becomes tedious and unrealistic to perform if the configuration is slow, it is therefore important to ensure the configuration is as fast as possible. The transmission speed of software, IPbus, \gls{fpga} and microcontroller all affect the configuration process. As a benchmark, the configuration should not take more than 10s to complete. Any longer and the system will feel sluggish and laggy to the user.
+Configuring the layers of the \gls{dtc} requires sending multiple write requests through the \gls{pcs}, which can take a significant time to perform. If the process is slow, it will feel sluggish for the user, impacting the user experience. Additionally, debugging the hardware becomes tedious and unrealistic if the configuration is slow; it is, therefore, vital to ensure the configuration is as fast as possible. The transmission speed of software, IPbus, MB Hub and microcontroller all affect the configuration process. The configuration should take at most 10 seconds to complete as a benchmark. Any longer and the system will feel sluggish and laggy to the user.
 
-We will first cover the calculated delay of the configuration system. As mentioned in \autoref{ssec: IPbus}, the transmission speed of performing one read/write with IPbus is 250 $\mu$s, but this can be improved per package, by sending larger packets over the Ethernet cable at once. The \gls{fpga} is an UltraScale, high speed board with an internal system clock of 300 MHz, meaning each operation takes approximately 3 ns to perform, which is negligible compared to the other sources of delay in the \gls{pcs}. The last chain in the \gls{pcs}, the microcontroller on the \gls{mb} can have a maximum baud rate of 1 Mbit/s, leading to 1 us transmission speed per bit. writing to the microcontroller requires sending 32 bits + 1 start bit, this results in a delay of: 
+We will first cover the calculated delay of the configuration system. As mentioned in \autoref{ssec: IPbus}, the transmission speed of performing one read/write with IPbus is 250 $\mu$s, but this can be improved per package by sending larger packets over the Ethernet cable at once. The \gls{fpga} is an UltraScale high-speed board with an internal system clock of 300 MHz, meaning each instruction takes approximately 3 ns to perform, which we will assume is negligible compared to the other sources of delay in the \gls{pcs}. The last chain in the \gls{pcs}, the microcontroller on the \gls{mb} can have a maximum baud rate of 1 Mbit/s, leading to 1 us transmission speed per bit. Writing to the microcontroller requires sending 32 bits + 1 start bit; this results in a delay of: 
 
 \begin{equation} \label{eqn:mu_calculation}
 \frac{n}{\mu_{baud}}=\frac{33}{1000000}=33 \mu s
 \end{equation}
 
-where n is the number of bits being sent. The calculated delay of one write requests (assuming the \gls{fpga} delay is negligible) sent through IPbus, down to microcontroller becomes:
+Where n is the number of bits being sent, the calculated delay of one write request (assuming the \gls{fpga} delay is negligible) sent through IPbus, down to microcontroller, becomes:
 
 \begin{equation} \label{eqn:write_delay_equation}
 t_{write}+t_{\mu }= 250 + 33 = 288\mu s
 \end{equation}
 
-The configuration of the layers is done in parallel, the \gls{fpga} is able to transmit data to all layers at once, so for the sake of calculating delay, we need only look at the configuration timing of a single layer. Eight registers must be written to initially and for each string turned on, the three threshold registers and enable signal register must be written to. this amounts to 8 + 4*12 = 56 write requests for a single layer. Confirming the handshake values must be done individually by software and performing 56 write requests for 43 layers leads to reading 56*43 handshake values. The theoretical delay for an entire configuration process will then be:
+The configuration of the layers is done in parallel; the \gls{fpga} can transmit data to all layers at once, so to calculate delay, we need only look at the configuration timing of a single layer. Eight registers must be written initially; for each string turned on, three threshold registers and the enable signal register must be written. This amounts to 8 + 4$\cdot$12 = 56 write requests for a single layer. Confirming the handshake values must be done individually by software, and performing 56 write requests for 43 layers leads to reading 56*43 handshake values. The theoretical delay for an entire configuration process will then be:
 
 \begin{equation} \label{eqn:total_delay_equation}
-(56*43+56)*t_{IPbus}+56*t_{\mu }= 2464 * 250 + 56*33 = 617 848\mu s = 0.618 s
+(56*43+56)*t_{IPbus}+56*t_{\mu }= 2464 * 250 + 56*33 \approx 0.618 s
 \end{equation}
 
-Important to note that the delay of the software is not considered in this calculation, only the delay through the \gls{pcs} chain. This calculation is also considering the worst case scenario of the IPbus delay being 250 us, we can expect the delay from the IPbus to be significantly shorter per data packet sent, when sending large data packets at once. We can see from \autoref{eqn:total_delay_equation} that the calculated delay amounts to 0.618 s, which is significantly faster than our maximum of 10s.
+Important to note that the delay of the software is not considered in this calculation, only the delay through the \gls{pcs} chain. This calculation also considers the worst-case scenario of the IPbus delay being 250 us; we can expect the delay from the IPbus to be significantly shorter per data packet sent when sending large data packets at once. We can see from \autoref{eqn:total_delay_equation} that the calculated delay amounts to 0.618 s, which is significantly faster than our maximum of 10s.
 
-The next step is to measure the delay of the \gls{pcs} directly. We currently have a prototype layer of the \gls{pcs} running, a communication link from software to microcontroller. Only one layer is operational, therefore tests performed will be incomplete and may not be completely accurate, but it will still give us a rough estimate of what the expected delay will be in the final product. For comparison sake, we will first calculate the estimated configuration timing for one layer using \autoref{eqn:total_delay_equation}:
+\subsubsection{Testing configuration timing}
+
+The next step is to measure the acutal delay of the \gls{pcs}. We currently have a prototype layer of the \gls{pcs} running, a communication link from software to the microcontroller. Only one layer is operational; therefore, tests performed will be incomplete and may not be completely accurate, but it will still give us a rough estimate of the expected delay in the final product. For comparison sake, we will first calculate the estimated configuration timing for one layer using \autoref{eqn:total_delay_equation}:
 
 \begin{equation} \label{eqn:one_layer_delay}
-(56*1+56)*t_{IPbus}+56*t_{\mu }= 112 * 250 + 56*33 =  29848\mu s = 29.8 ms
+(56*1+56)*t_{IPbus}+56*t_{\mu }= 112 * 250 + 56*33 \approx 29.8 ms
 \end{equation}
 
-We now perform the test 1000 times and calculate the average and standard deviation from the measurements. Time measurement is done with the time library from Python, which may lead to small inaccuracies due to it being dependent on the computer it is running on.
+We can expect the measurements of the delay to be approximately 30 ms. The test configures the microcontroller 1000 times and calculates the average time and standard deviation. The time measurement is done with the Time library from Python, which includes the software delay of the system, and can lead to minor inaccuracies in the measurements.
 
-The test setup had an average configuration time of 51ms($\sigma$ = 7ms), which is close to the calculated value, but not completely accurate. This can again be explained by the imperfect time measurement, or other small processes in the transmission that was not taken accounted for in the calculations.
+The test setup had an average configuration time of 51ms($\sigma$ = 7ms), close to the calculated value but not wholly accurate. This can be explained by the imperfect time measurement or other small processes in the transmission that were not accounted for in the calculations.
 
 From the test, we can expect the configuration timing of all 43 layers to be slightly larger than the calculated timing from \autoref{eqn:total_delay_equation}.
 
 
 
-\notinmain{Her skal vi ha: timing av konfigureringsprossesen, både målt og antatt fart ved parallelisering}
-
 
 \end{document}
+
+
