@@ -4,25 +4,58 @@
 \usepackage{subfiles}
 
 
-\title{Design of Configuration and Monitoring System for the Power Supply in ProtonCT Project.}
+\title{Design of a Configuration and Monitoring System for the Power Supply in the ProtonCT Project}
 \author{Håvard Birkenes}
-\date{February 2022}
+\date{October, 2022}
 
 \begin{document}
-
+\counterwithin{lstlisting}{section}
 \renewcommand{\notinmain}[1]{}
-    \maketitle
-    \thispagestyle{empty}
+\begin{titlepage}
     \begin{center}
-        \includegraphics[width=8cm]{images/UiB-emblem_gray.pdf}
-    \end{center}
+        \vspace*{1cm}
+            
+        \LARGE
+        Design of a Configuration and Monitoring System \\
+        for the Power Supply in the ProtonCT Project
+            
 
+        \large
+        \vspace{1cm}
+        Håvard Birkenes
+            
+        \vspace{2cm}
+        
+         \includegraphics[width=0.45\textwidth]{images/UiB-emblem_gray.pdf}
+            
+        \vspace{1.3cm}
+         Master's thesis in Physics
+        \vspace{0.4cm}
+            
+       
+            
+        \LARGE
+        University of Bergen\\
+        Department of physics and technology\\
+        \vspace{0.6cm}
+        \Large
+        October, 2022
+            
+    \end{center}
+\end{titlepage}
 
      % Table of Contents
+     \pagenumbering{gobble}
+     \newgeometry{left=4cm,bottom=0.1cm}
+     \subfile{documents/aknow.tex}
     \newpage
+    \
+    \newpage
+  
     \pagenumbering{gobble}
     \subfile{documents/abstract.tex}
     \newpage
+      \restoregeometry
     \pagenumbering{roman}
     \tableofcontents
     \newpage

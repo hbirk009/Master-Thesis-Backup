@@ -1,20 +1,21 @@
 \documentclass[main.tex]{subfiles}
-
 \begin{document}
 \appendix
 % Mental notat her på å fikse register map filene for fpga og mikrokontroller
 \section{Software}
 
-\subsection{Microcontroller Register Map}
+\subsection{Microcontroller AdressMap}
 \label{appendix: register_map}
-\includepdf{images/BITMAP.pdf}
+\includepdf[pages=1-3, angle=-90]{images/BITMAP.pdf}
+\includepdf[pages=4-5]{images/BITMAP.pdf}
 
 
 \subsection{FPGA register map}
 \label{appendix: fpga_map}
-\begin{figure}[!htpb]
+
+\begin{figure}[!h]
     \centering
-    \includegraphics[ scale=1, height=25cm, width=20cm]{images/fpga_map.pdf}
+    \includegraphics[height= 19cm, width=17cm]{images/bilde.png}
 \end{figure}
 \FloatBarrier
 \newpage
@@ -25,7 +26,7 @@ The control software is made of many libraries and programs that work together, 
 
 \subsection{Python libraries}
 
-The Python programs uses several libraries for communication and to process data. most of these can be installed using pip, but some require more setup. The following libraries are required:
+The Python programs uses several libraries for communication and to process data. Most of these can be installed using pip, but some require more setup. The following libraries are required:
 \subsubsection{Bitstream}
 Bitstream, used to perform bitwise operations on data from FPGA. Can be installed with:
 \begin{verbatim}
@@ -88,14 +89,14 @@ The InfluxDB client for Python. \gls{api} for writing and reading data to the In
 \end{verbatim}
 
 the Python client will need an \gls{api} token to connect to the database, this can be retrieved from the Influx web interface, in the data section, under python client library. This page also contains examples of various operations one can perform with the Influx python \gls{api}.
-
+\newpage
 \section{Typical errors}
 
 This section will cover common mistakes and pitfalls while using the software described in this thesis. Some may appear obvious, but it is documented here for the sake of completeness.
 
 \subsection{Bit Error Rate and Masking}
 
-The repository contains 3 tests for testing bit error rate in the transmission from control software to microcontroller, and back. These tests uses the microcontroller \gls{api} class when transmitting data, and the \gls{api} masks the data received, only keeping the data bits. One must disable the masking done in the microcontroller \gls{api} before performing these tests or the address and RnW bits will always turn out erroneous in the tests.
+The repository contains 3 tests for testing bit error rate in the transmission from control software to microcontroller, and back. These tests use the microcontroller \gls{api} class when transmitting data, and the \gls{api} masks the data received, only keeping the data bits. One must disable the masking done in the microcontroller \gls{api} before performing these tests or the address and RnW bits will always turn out erroneous in the tests.
 
 
 \subsection{InfluxDB Retention Policy}
@@ -112,7 +113,7 @@ Bitstream works by having a pointer that starts at the \gls{msb}, and when readi
 
 \subsection{IPbus Address Values}
 
-The IPbus address values are set in the XML-files, which determines the address value for the modules, as well as the addresses inside said modules. An unusual bug was discovered while testing the IPbus system using a dummy module. The first was that performing write requests to module 10 would also perform the same operation to module 1. Writing to module 12 would also write to module 2, and so on.
+The IPbus address values are set in the XML-files, which determine the address value for the modules, as well as the addresses inside said modules. An unusual bug was discovered while testing the IPbus system using a dummy module. The first was that performing write requests to module 10 would also perform the same operation to module 1. Writing to module 12 would also write to module 2, and so on.
 
 The cause for this was found to be the address values to each module. Module 1 had address 0x01, module 2 had 0x02, and so on, until module 10, which had address 0x10. I forgot while making the address values that these were hexadecimal values, not decimals, so I skipped straight to 0x10. In theory this should not have an effect on anything in the IPbus system, all that is important is that the address values are unique, but in this instance, changing module 10 to have address 0x0A fixed the problem. The underlying cause of this issue was never discovered, so efforts should be made to ensure that address values are sequential and consistent.
 
@@ -120,7 +121,7 @@ The cause of the bug was not determined, but the fault could have been in the us
 
 \subsection{Grafana}
 
-Setting up graphs and queries in Grafana can be time consuming and performing operations on all 43 displays on the dashboard is very repetitive and inefficient. A more efficient way of modifying the dashboard in any capacity is to not to directly use the Grafana dashboard. Instead, download the JSON-format of the dashboard, this can be accessed by going into the settings menu on a specific dashboard. Then go to "JSON Model" and copy the the code there. Put the code in a text editor, such as Visual Studio Code, and manipulate the dashboard from there. Changing variable names or query request of multiple graphs can be done relatively easy using this method.
+Setting up graphs and queries in Grafana can be time consuming and performing operations on all 43 displays on the dashboard is very repetitive and inefficient. A more efficient way of modifying the dashboard in any capacity is to not to directly use the Grafana dashboard. Instead, download the JSON-format of the dashboard, this can be accessed by going into the settings menu on a specific dashboard. Then go to "JSON Model" and copy the the code there. Put the code in a text editor, such as Visual Studio Code, and manipulate the dashboard from there. Changing variable names or query requests of multiple graphs can be done relatively easy using this method.
 
 When done editing the file, go to the Dashboard menu on the Grafana web interface and click import:
 
@@ -139,9 +140,8 @@ From there enter your edited JSON-file and create the new dashboard, note that i
 
 Strange behaviour was detected in the \gls{fpga} design whenever an attempt was made to read from an already empty FIFO. This behaviour added seemingly random values into the \gls{fifo}s while performing read and write requests. This bug should be fixed in the latest version of the bit-file for the \gls{fpga}, but to ensure consistency in the tests of the \gls{pcs}-chain, a check is done in the tests to ensure that we are not reading an empty \gls{fifo}. The tests check if received data is equal to zero, if it is, then the \gls{fifo} was read too soon. This may happen if the \gls{fpga} does not get a response from the microcontroller in time or if the baud rate is too low compared to the speed of the read/write requests from the control software.
 
-Also important to note, if the \gls{fifo} was read too soon, then the rest of the transmissions will fall out of synch and will not match the expected result, and then the entire test is invalid. That is also why it is important to perform a reset of the modules for each test performed, to ensure that all \gls{fifo}s are empty when starting a new test.
+Also important to note, if the \gls{fifo} was read too soon, the rest of the transmissions will fall out of sync and will not match the expected result, rendering the test invalid. That is also why it is important to perform a reset of the modules for each test performed, to ensure that all \gls{fifo}s are empty when starting a new test.
 
-\notinmain{IPbus/uhal, mongoDB(sjekk mer opp i denne, alternativt bare bruk Jonas sin install commands), pyMongo, influxdb, influxdb pytohn client, telegraf plugin, grafana}
 
 
 \end{document}

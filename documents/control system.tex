@@ -4,7 +4,7 @@
 \section{Control System Design Methodology}
 \textit{This section covers design methodology for control systems and software design. The focus is on the \gls{scada} architecture, how it is constructed and the methodology behind creating such a system. Finally, a discussion is made on the methodology of software design and common ways to structure code.}
 
-The Readout units and the power supply boards require a software endpoint that controls the entire system. This entails creating a system that can set up and configure the various parts of the system, monitor the system, and report errors, i.e. we need to create a monitoring and configuration system.
+The readout units and the power supply boards require a software endpoint that controls the entire system. This entails creating a system that can set up and configure the various parts of the system, monitor the system, and report errors, i.e. we need to create a monitoring and configuration system.
 
 \subsection{Overview}
 Control systems have been a part of the industry for decades; it started in the 1960s when specialized minicomputers interfaced directly with devices in the plant or factory\cite{scada_history}. These systems were primarily used for automation but were highly specific and integrated into its system, using proprietary communication protocols and technology. Later, programmable controllers started to phase out minicomputers, and \gls{hmi} evolved from terminals with keyboards to advanced \gls{gui}s. Ethernet eventually became the industry standard communication protocol. Finally, these technologies converged into a single system, nicknamed \gls{scada}.
@@ -20,12 +20,12 @@ A \gls{scada} system typically is made out of five components:
 \begin{itemize}
     \item Field devices and signals
     \item \acrfull{ppc}
-    \item \acrfull{hmi} and Workstation software
+    \item \acrfull{hmi} and workstation software
     \item Database servers
     \item Communication infrastructure
 \end{itemize}
 
-Field devices and signals encompass all sensors and the actuators that control them. The \gls{ppc} is responsible for automatically controlling the field devices, retrieving data from them and sending it to the \gls{hmi}. A microcontroller is an example of a \gls{ppc}. \gls{hmi} is a part of the software being executed in the workstation and is made of a user interface and database manager. The \gls{hmi} serves as the interface for the user to set up configuration processes and monitor the system performance. For this purpose, a configuration database is required to set up the \gls{ppc}s with correct values. A historical database is needed to store monitoring data from field devices. A communication infrastructure connects the \gls{ppc}s to the workstations running the  \gls{hmi} software. An image of a typical \gls{scada}-system is shown in \autoref{fig: scada_system}.
+Field devices and signals encompass all sensors and the actuators that control them. The \gls{ppc} is responsible for automatically controlling the field devices, retrieving data from them and sending it to the \gls{hmi}. \gls{hmi} is a part of the software being executed in the workstation and is made of a user interface and database manager. The \gls{hmi} serves as the interface for the user to set up configuration processes and monitor the system performance. For this purpose, a configuration database is required to set up the \gls{ppc}s with correct values. A historical database is also needed to store monitoring data from field devices. A communication infrastructure connects the \gls{ppc}s to the workstations running the  \gls{hmi} software. An image of a typical \gls{scada}-system is shown in \autoref{fig: scada_system}.
 
 \begin{figure}[!ht]
     \centering
@@ -54,9 +54,9 @@ The field signals encompass all input and output signals in a system. Knowing al
 
 The functionality of the \gls{ppc} should be defined and documented so the reader can understand how the monitor and control operations are performed. In addition, the documentation of the \gls{ppc} aids in developing the workstation software, which must interface with it.
 
-\subsubsection{Developing Workstation software}
+\subsubsection{Developing workstation software}
 
-The software to be used in the Workstations comprises two parts: the system's graphical display, which serves as the \gls{hmi}, and the databases containing information of the \gls{ppc}s. The Graphical display must be designed so the user can quickly and efficiently survey and control the system. Security must also be considered in the design; certain functions that can change parameter values should ideally be only available to administrative users. This reduces the chance of equipment or instruments being damaged by inexperienced users.
+The software to be used in the workstations comprises two parts: the system's graphical display, which serves as the \gls{hmi}, and the databases containing information of the \gls{ppc}s. The graphical display must be designed so the user can quickly and efficiently survey and control the system. Security must also be considered in the design; certain functions that can change parameter values should ideally be only available to administrative users. This reduces the chance of equipment or instruments being damaged, or data being deleted by inexperienced users.
 
 The database software must store configuration values for the \gls{ppc}s and the monitoring data from them. There are usually two databases maintained for this purpose, one for configuration and one for monitoring. Communication software must be developed that regularly polls data from the \gls{ppc} and inserts it into the monitoring database. Likewise, the configuration software must retrieve data from the configuration database and send the data to the \gls{ppc}. The tag values used in the database should be meaningful and standardized, making it easy for users to get an overview of the data.
 
@@ -77,7 +77,7 @@ Good documentation of a \gls{scada}-system includes:
 
 \subsection{Software design}
 
-Software design can be a complex task when developing an extensive system. Specific measures should be taken to ensure the software development and maintenance becomes cumbersome and unmanageable. Using programming standards and conventions can drastically increase the readability and the ease of expanding the software. Additionally, using version control systems like Git and GitHub makes maintaining the code in a project with multiple people straightforward.
+Software design can be a complex task when developing an extensive system. Therefore, specific measures should be taken to ensure that software development and maintenance are manageable. Using programming standards and conventions can drastically increase the readability and the ease of expanding the software. Additionally, using version control systems like Git and GitHub makes maintaining the code in a project with multiple people straightforward.
 
 \subsubsection{Object Oriented Programming}
 
@@ -85,13 +85,13 @@ A consistent programming standard helps debug and expand the system's functional
 
 \gls{oop} have four basic principles when creating classes in programs: Abstraction, Encapsulation, Inheritance, and Polymorphism. Abstraction is based on creating an object or class interface that allows an outside source to interact with the object without knowing the inner implementation of the class. This reduces the program complexity and serves as an intuitive segmenting of the software.
 
-Encapsulation declares that only the class should be able to manipulate and interact with its private variables. This assures that the classes are not dependent on other class implementations, which increases the modularity of the software. Finally, inheritance and polymorphism are closely related; they describe how classes can be derived from other classes, "inheriting" their functions, and how the inherited functions can be redefined, altering the class's behaviour.
+Encapsulation declares that only the class should be able to manipulate and interact with its private variables. This assures that the classes are not dependent on other class implementations, which increases the modularity of the software. Finally, Inheritance and Polymorphism are closely related; they describe how classes can be derived from other classes, "inheriting" their functions, and how the inherited functions can be redefined, altering the class's behaviour.
 
 
-These principles guide the developer to create modular and structured software which is reusable, easy to maintain, and modify. Abstraction is the most important principle, and encapsulation relates to how to create a good abstraction of the system. These two principles will be used the most in the work of this thesis. Systems designed to manage large amounts of data acquisition, such as a \gls{pet}-scan system, have in the past used \gls{oop} to design and manage large programs\cite{pet_control_system}, this gives more credence to use \gls{oop} in similar projects.
+These principles guide the developer to create modular and structured software which is reusable, easy to maintain, and modify. Abstraction is the most important principle, and encapsulation relates to how to create a good abstraction of the system. These two principles will be used the most in the work of this thesis. Systems designed to manage large amounts of data acquisition, such as a \gls{pet}-scan system, have in the past used \gls{oop} to design and manage large programs\cite{pet_control_system}. This gives more credence to use \gls{oop} in similar projects.
 
 \subsubsection{Git and GitHub}
-The use of the Git and GitHub tools is essential today to manage the project code and maintain it as a version control system. Git is another method to ensure that the code is easy to use and maintain, now and in the future. The version control system is also essential for verifying the code; Mistakes can be made, but a stable version of the software will always be available in previous versions on Git or GitHub. GitHub also enables a better workflow with co-developers or mentors, allowing easy access to the source code and giving feedback. 
+The use of the Git and GitHub tools is essential today to manage the project code and maintain it as a version control system. The version control system is essential for verifying the code; no matter what happens, a stable version of the software will always be available in previous versions on Git or GitHub. GitHub also enables a better workflow with co-developers or mentors, allowing easy access to the source code and giving feedback. 
 
 The GitHub repository used for this thesis contains a README file containing all practical information about the repository and the project's goals. This includes information about the configuration and monitoring process and a user guide to start the databases and \gls{gui}s. An example of the README file is given in \autoref{fig: readme}.
 

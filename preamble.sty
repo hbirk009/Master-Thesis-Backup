@@ -9,20 +9,59 @@
 \usepackage[labelfont=bf]{caption}
 \usepackage{booktabs}
 \usepackage{url}
+\usepackage{bytefield}
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
-\usepackage{xcolor}
+\usepackage{xcolor,colortbl}
 \usepackage{placeins}
 \usepackage{gensymb}
 \usepackage{parskip}
+\usepackage{fancyhdr}
 \usepackage{rotating}
 \usepackage[titletoc,title]{appendix} 
 \usepackage{pdfpages}
 \usepackage{chngcntr}
+\usepackage{listings}
+\usepackage{lscape}
+\usepackage{tabularx}
+\usepackage{color}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
 \counterwithin{equation}{section}
 \counterwithin{figure}{section}
+\counterwithin{table}{section}
 \addbibresource{refs.bib}
-
+\newcommand{\memsection}[4]{
+\bytefieldsetup{bitheight=#3\baselineskip}    % define the height of the memsection
+\bitbox[]{10}{ \hspace{2.35em}
+\texttt{0x\uppercase{#1}} % print end address
+\\ \vspace{#3\baselineskip} \vspace{-2\baselineskip} \vspace{-#3pt}  % do some spacing
+\texttt{0x\uppercase{#2}} \hspace{-3em} % print start address
+}
+\bitbox{16}{#4} % print box with caption
+}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\lstset{frame=tb,
+  language=XML,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{dkgreen},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+\pagestyle{fancy}
+\lhead{\leftmark}
+\rhead{\rightmark}
+\cfoot{\thepage}
 
 %Acronyms
 \makeglossaries

@@ -6,13 +6,13 @@
 \label{section:testV}
 \textit{This chapter describes the simulations created to test IPbus and control software and tests performed on the Power Control System prototype. Testing methods and test coverage is analyzed and discussed, and methods for error prevention are highlighted. Test scripts have been created to test and verify the various parts of the \gls{pcs} and control software, and the results are discussed in this chapter.}
 
-Testing and verification are among the most critical and potentially time-consuming parts of the design process. Therefore, it is essential to create tests for the system while in the design process and ensure it is easy to test. This chapter describes the different tests performed on control software, MB Hub and the microcontroller of the \gls{mb}.
+Testing and verification are among the most critical and potentially time-consuming parts of the design process. Therefore, it is essential to create tests for the system during the design process and ensure it is easy to test. This chapter describes the different tests performed on the control software, the MB Hub and the microcontroller of the \gls{mb}.
 
 \subsection{Test Coverage}
 
-The \gls{pcs} consists of the control software, the MB Hub, and the Monitoring Board. The tests will focus on the control software developed in this thesis and the communication link between the software and the MB. Important to note that verification of the high-level \gls{api}s was not done due to the ALPIDE-sensors not being available in the test setup
+The \gls{pcs} consists of the control software, the MB Hub, and the Monitoring Board. The tests will focus on the control software developed in this thesis and the communication link between the software and the MB. It is important to note that verification of the high-level \gls{api}s was not done due to the ALPIDE-sensors not being available in the test setup.
 
-The tests and verification of the software design consists of:
+The tests and verification of the software design consist of:
 
 \begin{itemize}
     \item Simulation library for early testing of IPbus communication.
@@ -37,12 +37,12 @@ The hardware design comprises reliability and speed tests of the two communicati
 
 \subsection{Simulation}
 
-The FPGA-design and the \gls{mb}-design is still in development during this thesis and was initially unable to test and verify configuration and monitoring system components. A solution to this problem is to create a simulation that mimics the system's behaviour. The simulation aims to create a suitable testing environment for the GUI and APIs developed and allow for testing and familiarity with IPbus. This involves the ability to read/write data from IPbus and process the data bit-wise. The data will determine if it is a read or write request and transmit the requested data to the virtual address register. The code written for the simulation will also be similar to the actual implementation, allowing the code to be reused.
+The FPGA-design and the \gls{mb}-design is still in development during this thesis and was initially unable to test and verify configuration and monitoring system components. A solution to this problem is to create a simulation that mimics the system's behaviour. The simulation aims to create a suitable testing environment for the GUI and APIs developed and allow for testing with IPbus. This involves the ability to read/write data from IPbus and process the data bit-wise. The data will determine if it is a read or write request and transmit the requested data to the virtual address register. The code written for the simulation will also be similar to the actual implementation, allowing the code to be reused.
 
-The simulation is written in Python, using OOP template, meaning each module of the PCS has its own defined class with functions and encapsulated variables. Due to it being a direct connection between the object class and its physical counterpart, expanding the simulation's functionality and adding new functions is intuitive and relatively easy to do.
+The simulation is written in Python, using an OOP template, meaning each module of the PCS has its own defined class with functions and encapsulated variables. Due to it being a direct connection between the object class and its physical counterpart, expanding the simulation's functionality and adding new functions is intuitive and relatively easy to do.
 
 \subsubsection{Overview}
-As mentioned, the simulation is object-oriented and consists of 4 classes and test functions for each. The classes are based on the final FPGA-design considered in \autoref{section: fpga_design}. The MB Hub itself is represented by the \textit{monitor sim manager} which instantiates a \textit{monitor module} object and a \textit{global module} object inside itself. The microcontroller's class is instantiated inside each monitor module class, mimicking how each module on the FPGA maintains its respective microcontroller. Finally, \textit{monitor sim manager} is instantiated in the GUI class that is connected to the MongoDB API. This allows for testing the GUI and configuration of the microcontrollers in the simulation. A class diagram of the simulation is shown in \ref{fig: class_diagram}.
+As mentioned, the simulation is object-oriented and consists of 4 classes and test functions for each. The classes are based on the final FPGA-design considered in \autoref{section: fpga_design}. The MB Hub itself is represented by the \textit{monitor sim manager} which instantiates \textit{monitor module} objects and a \textit{global module} object inside itself. The microcontroller's class is instantiated inside each monitor module class, mimicking how each module on the FPGA maintains its respective microcontroller. Finally, \textit{monitor sim manager} is instantiated in the GUI class that is connected to the MongoDB API. This allows for testing the GUI and configuration of the microcontrollers in the simulation. A class diagram of the simulation is shown in \ref{fig: class_diagram}.
 
 \begin{figure}[!ht]
     \centering
@@ -52,24 +52,23 @@ As mentioned, the simulation is object-oriented and consists of 4 classes and te
 \end{figure}
 \FloatBarrier
 
-\notinmain{snakke om i denne sectionen: features present and not present, limitations, uart communication is not simulated, fifos not simulated either, ingen FIFO. Bør eg endre simulasjonen til å lese data fra tekstfilene?}
 
 \subsubsection{Features}
 
 The simulation uses IPbus dummy hardware to communicate between the monitor sim manager class and the monitor module class. The dummy hardware is hosted on the computer localhost and has the same functionality as an IPbus module on an FPGA.
 
-The FPGA and microcontroller class can perform read and write operations to the microcontroller class's virtual registers. The microcontroller class decodes read/write bit, address and data from the TX value it is given, according to the data header discussed in \autoref{ssec: microcontroller}. A global module is also simulated, allowing for transmitting to every micro-controller using the global transact function in the monitor sim manager. 
+The MB Hub and microcontroller class can perform read and write operations to the microcontroller class's virtual registers. The microcontroller class decodes read/write bit, address and data from the TX value it is given, according to the data header discussed in \autoref{ssec: microcontroller}. A global module is also simulated, allowing for transmission to every microcontroller using the global transact function in the monitor sim manager. 
 
-Using the simulation is as simple as instantiating the monitor sim manager object in the code and using the send data function to send TX data. The function will return the data from the specified RX register in IPbus. In addition, the microcontroller class will create a text file with its addresses and contents, allowing the user to verify the data.
+Using the simulation is done by instantiating the monitor sim manager object in the code and using the send data function to send TX data. The function will return the data from the specified RX register in IPbus. In addition, the microcontroller class will create a text file with its addresses and contents, allowing the user to verify the data.
 
 The simulation was created as a platform to perform tests on IPbus code without needing the actual hardware. However, halfway through the development cycle, the hardware became available, and the development of the simulation was deemed unnecessary. The simulation functionality is, therefore, outdated, but it can still be used to test simple read and write functions on software if needed.
 
 
 \subsection{Testbench}
 
-Testbenches have been made to verify the functionality of the \gls{api}s, and classes designed for the control software have been made to test and verify the different functions. However, due to needing access to the layers themselves, functions testing the entire \gls{pcs} chain has yet to be made, which means we do not have full coverage on the tests. Additionally, tests for the \gls{pcs}-chain are unreliable due to the high bit error rate discussed in \autoref{ssec: bit_error}.
+Testbenches have been made to verify the functionality of the \gls{api}s, and classes of the control software. However, due to needing access to the layers themselves, functions testing the entire \gls{pcs} chain has yet to be made, which means we do not have full coverage on the tests. Additionally, tests for the \gls{pcs}-chain are unreliable due to the high bit error rate discussed in \autoref{ssec: bit_error}.
 
-Testing the entire system can be done by booting up the main hub \gls{gui} and observing that the control software behaves as expected. When all parts of the \gls{dtc} are available for testing, and the bit error rate is acceptable, a full-scale, automatic testbench should be developed that allows for the entire system to be quickly tested and verified. This would serve as a standard for the system and allow for quick verification when modifying or expanding existing functions. The testbench development should ideally be based on a testing framework, such as unit testing\cite{unit_test}, to efficiently design tests for the control software.
+Testing the entire system can be done by starting the main hub \gls{gui} and observing that the control software behaves as expected. When all parts of the \gls{dtc} are available for testing, and the bit error rate is acceptable, a full-scale, automatic testbench should be developed that allows for the entire system to be quickly tested and verified. This would serve as a standard for the system and allow for quick verification when modifying or expanding existing functions. The testbench development should ideally be based on a testing framework, such as unit testing\cite{unit_test}, to efficiently design tests for the control software.
 
 
 
@@ -77,19 +76,12 @@ Testing the entire system can be done by booting up the main hub \gls{gui} and o
 \subsection{Test setup}
 \label{ssec: test_setup}
 
-The development of the \gls{dtc} is still ongoing. This implies that we do not have access to the ALPIDE layers or to the necessary hardware to set up all 43 monitor boards for the \gls{pcs}. In addition, the design of the \gls{mb} is still under development, and setting up the full \gls{pcs} is, therefore, still not possible.
+The development of the \gls{dtc} is still ongoing. This implies that we do not have access to the ALPIDE layers or to the necessary hardware to set up all 43 monitor boards for the \gls{pcs}. In addition, the design of the \gls{mb} is still under development, and setting up the full \gls{pcs} is therefore still not possible.
 
-We can, however, set up a prototype of the \gls{pcs} without connection to the ALPIDE-sensors. This prototype is realized with a computer connected to the KCU105 evaluation board, and pins on the board are connected to the \gls{usart} signals. The \gls{usart} signals are then wired to a microcontroller development kit, programmed with the \gls{mb} software. An image of the prototype is shown in \autoref{fig: pcs_setup}.
+We can, however, set up a prototype of the \gls{pcs} without connection to the ALPIDE-sensors. This prototype is realized with a computer connected to the KCU105 evaluation board, and pins on the board are connected to the microcontroller development kit. An image of the prototype is shown in \autoref{fig: pcs_proto}.
 
-\begin{figure}[!htpb]
-    \centering
-    \includegraphics[width=14cm]{images/pcs_setup.jpg}
-    \caption{PCS prototype setup.}
-    \label{fig: pcs_setup}
-\end{figure}
-\FloatBarrier
 
-The test setup can be used to test the MB Hub and, by extension, the microcontroller software. The setup also verifies the two communication links in the \gls{pcs}, control software to MB Hub, and the USART communication between the MB Hub and the microcontroller.
+The test setup can be used to test the MB Hub and, by extension, the microcontroller software. The setup also be used to verify the two communication links in the \gls{pcs}, which is the IPbus link between control software and MB Hub, and the USART communication between the MB Hub and the microcontroller.
 
 
 
@@ -102,15 +94,15 @@ The communication link between the control software and the MB Hub uses the IPbu
 
 The IPbus suite has been extensively tested, on several different boards, with no errors recorded after transmitting 10 billion packets\cite{IPbus}. However, for completeness, our IPbus-link must be verified to ensure the correctness of our design. The test involves reading and writing random values to a register in the MB Hub and verifying that the value read was the one written to the register. However, we must be sure that the values are read from the actual register and not from a buffer inside the IPbus module. The test writes and reads values from three different registers to avoid this issue. The test reads and writes from the TX/RX registers in the dummy module, the baud rate register in the global module, and the enable register in the global module.
 
-The test was run for 5 hours, and 10 million reads and writes were performed from each register. There were no errors reported from the communication. This suggests that the MB Hub design is reliable, and we expect no errors between the control software and the MB Hub.
+The test was run for 5 hours, and 10 million reads and writes were performed from each register. There were no errors reported from the communication. This suggests that the MB Hub design is reliable, and suitable for our use.
 
 \subsubsection{MB Hub Speed Test}
 
-The transmission speed between the control software and the MB Hub can significantly impact the speed of the \gls{pcs}-chain; this property of the MB Hub must therefore be tested and verified. This communication link uses IPbus, and the IPbus user guide states that reading or writing a single word has a latency of approximately 250 $\mu$s\cite{ipbus_guide}. This number might not reflect our setup, so we performed a transmission speed test. The test uses the time library from Python to measure the write and read speed of the dummy module on the MB Hub.
+The transmission speed between the control software and the MB Hub can significantly impact the speed of the \gls{pcs}-chain; this property of the MB Hub must therefore be tested and verified. This communication link uses IPbus, and the IPbus user guide states that reading or writing a single word has a latency of approximately 250 $\mu$s\cite{ipbus_guide}. This number might not reflect our setup, so we performed a transmission speed test. The test uses the Time library from Python to measure the write and read speed of the dummy module on the MB Hub.
 
-The TX and RX register of the dummy module was written and read 1 000 000 times. On average, the single write latency was 0.4 ms($\sigma$ = 0.2 ms), and the single read latency was also 0.4 ms($\sigma$ = 0.3 ms). These measurements deviate from the assumed transmission delay of 250 $\mu$s. The imperfect time measurement from the software could be the cause of this deviation.
+The TX and RX register of the dummy module was written and read 1 000 000 times. On average, the single write latency was 0.4 ms($\sigma$ = 0.2 ms), and the single read latency was also 0.4 ms($\sigma$ = 0.3 ms). These measurements deviate from the assumed transmission delay of 250 $\mu$s. The software delay could be the cause of this deviation. The software is run on a laptop computer, which might not be as fast as a desktop computer.
 
-With this new number for the transmission delay, we can redo the configuration and monitoring timing calculations performed in \autoref{ssec: con_timing} and \autoref{eqn:monitoring_timing}, respectively. Using \autoref{eqn:one_layer_delay}, but set the IPbus delay to be 400 $\mu$s, the delay of configuring one layer becomes:
+With this new number for the transmission delay, we can redo the configuration and monitoring timing calculations performed in \autoref{ssec: con_timing} and \autoref{ssec: char_mon}, respectively. Using \autoref{eqn:one_layer_delay}, but set the IPbus delay to be 400 $\mu$s, the delay of configuring one layer becomes:
 
 \begin{equation} \label{eqn:new_one_layer_delay}
 112 * 400 + 56*33 =  46648\mu s \approx 46.6 ms
@@ -129,7 +121,7 @@ This new calculated timing for polling all data lies within the standard deviati
 \subsection{USART Interface Test}
 
 \label{ssec: bit_error}
-The bit error rate that occurs while sending data from the MB Hub to the microcontroller must be verified and ensured is within an acceptable rate. We can test this communication link by sending data from the control software to a TX register on the MB Hub, which starts the \gls{usart}-transmission to the microcontroller. We know from previous tests that the communication link between the control software and the MB Hub has a negligible error rate; therefore, we will assume all bit errors come from the communication link between the MB Hub and the microcontroller.
+The bit error rate that occurs while sending data from the MB Hub to the microcontroller must be verified and ensured to be within an acceptable rate. We can test this communication link by sending data from the control software to a TX register on the MB Hub, which starts the \gls{usart}-transmission to the microcontroller. We know from previous tests that the communication link between the control software and the MB Hub has a negligible error rate; therefore, we will assume all bit errors come from the communication link between the MB Hub and the microcontroller.
 
 The test is done by performing a write to a microcontroller register; we perform 1000 read operations from the register. This gives one sample, and this test is done 100 000 times to give us a mean error rate. Multiple bit patterns should be used to test edge cases such as alternating bits, all 1's, all 0's or random bit patterns. Results of different bit patterns is given from \autoref{fig: all_0_bit_rate} to \ref{fig: rand_bit_rate}.
 
@@ -147,7 +139,7 @@ The test is done by performing a write to a microcontroller register; we perform
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=18cm]{images/error_rate_all_1s.png}
-    \caption{Histogram showing the mean bit error rate with all 1's bit pattern. Black line is the standard deviation.}
+    \caption{Histogram showing the mean bit error rate with all 1's bit pattern.}
     \label{fig: all_1_bit_rate}
 \end{figure}
 \FloatBarrier
@@ -168,10 +160,10 @@ The test is done by performing a write to a microcontroller register; we perform
 \end{figure}
 \FloatBarrier
 
-Important to note that the baud rate was set to 921600 for these tests. The figures show that all but the "all 1's" test gave us errors. Alternating 1's and random bit pattern have a similar error rate, they match well if we consider the standard deviation of the error measurements. "All 0's" gave a significantly higher error rate than the other patterns, with the worst bit error at 9 for bit 7.
+The figures show that all but the "all 1's" test gave us errors. Alternating 1's and random bit pattern have a similar error rate, they match well if we consider the standard deviation of the error measurements. "All 0's" gave a significantly higher error rate than the other patterns.
 
 
-The all 1's pattern is the outlier, with no errors during the test. This result, combined with the all 0's pattern having an abnormally high error rate, we must assume that the cause of the errors is misinterpreting 0's to be 1's. In other words, the sampling timing is not the inherent cause of the errors. Judging from the bits, only the data bits(15:0) have errors, but other than that, no obvious pattern gives us more insight into the cause of the errors.
+The all 1's pattern is the outlier, with no errors during the test. This result, combined with the all 0's pattern having an abnormally high error rate, leads to the assumption that the cause of the errors is misinterpreting 0's to be 1's. In other words, the sampling timing is not the inherent cause of the errors. Judging from the bits, only the data bits(15:0) have errors, but other than that, no obvious pattern gives us more insight into the cause of the errors.
 
 A system's reliability can be quantified by its \gls{mtbf}, which determines the time span between faults occurring in a system\cite{mtbf_intro}. If we assume random values are being read, then from \autoref{fig: rand_bit_rate}, we can assume, on average, one error occurs for every 1000 USART transactions. From \autoref{ssec: con_timing}, it was calculated that one transmission from control software to microcontroller took 288 $\mu$s; this means we can expect the \gls{mtbf} of one \gls{usart} link to be:
 
@@ -185,13 +177,13 @@ The entire \gls{pcs}-system will have a \gls{usart}-link for every layer, which 
     \frac{1}{43*\frac{1}{MBTF}} = \frac{1}{43*\frac{1}{0.288}} = 0.0067s
 \end{equation}
 
-The \gls{mtbf} of the \gls{pcs}-system will be approximately 7 ms, which is unacceptable for use. The \gls{mtbf} of the \gls{pcs} should ideally be measured in months, not milliseconds. The conclusion is that the \gls{usart} communication between the MB Hub and the microcontroller is unacceptable. The error rate must be significantly improved before it can be used in the \gls{pcs}.
+The \gls{mtbf} of the \gls{pcs}-system will be approximately 7 ms, which is unacceptable for this project. The \gls{mtbf} of the \gls{pcs} should ideally be measured in months, not milliseconds. The conclusion is that the \gls{usart} communication between the MB Hub and the microcontroller is unacceptable. The error rate must be significantly improved before it can be used in the \gls{pcs}.
 
 
 
 \subsection{Baud rate error rate}
 \label{ssec:baud_error}
-Another aspect of the \gls{pcs}-prototype that is tested is using different baud rates for the transmission between \gls{fpga} and the microcontroller. If erroneous bits are caused by the sampling not hitting the falling edge of the clock, reducing the baud rate should improve the error rate, giving more time for sampling each bit. In the previous section, we observed an error rate of about 0.1\% for the data bits. This test was performed with a baud rate of 921600. A test was performed to assess whether a lower baud rate improves the bit error rate. The test result is given in \autoref{fig: baud_error}.
+Another aspect of the \gls{pcs}-prototype that is tested involves using different baud rates for the transmission between the MB Hub and the microcontroller. If erroneous bits are caused by the sampling not hitting the falling edge of the clock, reducing the baud rate should improve the error rate, giving more time for sampling each bit. In the previous section, we observed an error rate of about 0.1\% for the data bits. This test was performed with a baud rate of 921600. A test was performed to assess whether a lower baud rate improves the bit error rate. The test result is given in \autoref{fig: baud_error}.
 
 \begin{figure}[!ht]
     \centering
@@ -211,7 +203,7 @@ The figure shows that the lower baud rates increase the error rate, not lower it
 \end{figure}
 \FloatBarrier
 
-The figure shows the \gls{fpga} sending the read request; the microcontroller then performs a handshake by sending the read request back to the \gls{fpga}. After this, it starts transmitting the data inside the two registers associated with address 0x01, which in this case is 0x00 and 0xAA. Observe from the image that the timing of the microcontroller gets gradually skewed throughout the transmission. Based on the image, the last data bits appear to be sent from the microcontroller on the rising edge of the clock. If a $\ delta$t skews the data transmission for each clock cycle, and this $\delta$t is proportional to the clock speed, then a longer clock cycle, i.e. a lower baud rate, would create more skew and result in more errors.
+The figure shows the \gls{fpga} sending the read request; the microcontroller then performs a handshake by sending the read request back to the \gls{fpga}. After this, it starts transmitting the data inside the two registers associated with address 0x01, which in this case is 0x00 and 0xAA. Observe from the image that the timing of the microcontroller gets gradually skewed throughout the transmission. Based on the image, the last data bits appear to be sent from the microcontroller on the rising edge of the clock, not the falling edge. If a $\Delta$t skews the data transmission for each clock cycle, and this $\Delta$t is proportional to the clock speed, then a longer clock cycle, i.e. a lower baud rate, would create more skew and result in more errors.
 
 The conclusion is that until the underlying issue is resolved, one should use high baud rates to avoid excessive errors. The microcontroller supports baud rates up to 1 000,000, and the standard baud rate closest to it is 921600. Higher baud rates also make the transmission speed faster, which is favourable for the \gls{pcs} design.
 

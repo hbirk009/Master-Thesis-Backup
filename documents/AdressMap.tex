@@ -1,0 +1,102 @@
+\newpage
+documentclass[main.tex]{subfiles}
+\begingroup
+
+\newgeometry{margin=1in}
+\setlength{\arraycolsep}{10pt}
+\setlength{\parindent}{10pt}
+\fontsize{10pt}{10pt}
+\selectfont
+
+\begin{landscape}
+    \subsection{Adressmap}
+        \label{app:Adressmap}
+\begin{center}
+\setlength{\extrarowheight}{.115cm}
+\rowcolors{3}{gray!25}{white}
+\begin{tabularx}{\linewidth}{l c c c c c X} %7 items 11.75cm
+    \toprule
+    Register Name & Adress & Number of bits & Unit & Access & Default value & Description \\
+    \bottomrule
+    FW\_VERSION & 0x00 & 8 & - & R & - & Current firmware version. \vspace{\My_x} \\ 
+    
+    ADC\_VALUE & 0x02 & 12 & V/V & R/$\overline{\text{W}}$ & - & 12-bit ADC value. \vspace{\My_x} \\
+    
+    PT100\_READING & 0x04 & 8 & $\degree$C & R & - & ADC value converted to degrees celsius. \vspace{\My_x} \\
+    
+    TEMPERATURE\_LIMIT & 0x06 & 8 & $\degree$C & R/$\overline{\text{W}}$ & 100$\degree$C & On measuring a temperature above TEMPERATURE\_LIMIT the enable signals will be set low. Error 0x01. \vspace{\My_x} \\
+    
+    DAC\_VALUE & 0x08 & 10 & V/V & R/$\overline{\text{W}}$ & 0x00 & DAC voltage output from the MCU, input from 0x00 to 0x400 creates an output of \SI{0}{\V} to \SI{2.5}{\V}. NOTE: Read about the PWELL generation before changing. DOUBLE NOTE: The DAC utilises the 10 most significant bits! \vspace{\My_x} \\
+    
+    PWELL\_VOLTAGE\_MCU & 0x0A & 13 & mV & $\overline{\text{W}}$ & 0x00 & The desired PWELL voltage in millivolt. Writing a value to this registers triggers the MCU to create the complementary voltage on the PWELL line. \vspace{\My_x} \\
+    
+    DVDD\_CURRENT\_THRESHOLD1 & 0x0C & 14 & mA & R/$\overline{\text{W}}$ & 0x00 & INA3221 DVDD critical threshold. If the DVDD line exceed this current draw the enable signals are set low. Error 0x02 \vspace{\My_x}\\
+    
+    DVDD\_CURRENT\_THRESHOLD2 & 0x0E & 14 & mA & R & 0x00 & DVDD warning threshold. Error 0x03 \vspace{\My_x}\\
+    
+    DVDD\_VOLTAGE & 0x10 & 13 & mV & R & - & DVDD shunt resistor measured voltage. \vspace{\My_x}\\
+    
+    DVDD\_CURRENT & 0x12 & 13 & mA & R & - & DVDD shunt resistor measured current. \vspace{\My_x}\\
+    
+    AVDD\_CURRENT\_THRESHOLD1 & 0x14 & 14 & mA & R/$\overline{\text{W}}$ & 0x00 & INA3221 AVDD critical threshold. If the AVDD line exceed this current draw the enable signals are set low. Error 0x04 \vspace{\My_x}\\
+        
+    AVDD\_CURRENT\_THRESHOLD2 & 0x16 & 14 & mA & R/$\overline{\text{W}}$ & 0x00 & INA3221 AVDD warning threshold. Error 0x05 \vspace{\My_x}\\
+
+    AVDD\_VOLTAGE & 0x18 & 13 & mV & R & - & AVDD Voltage \vspace{\My_x}\\
+
+    AVDD\_CURRENT & 0x1A & 13 & mA & R & - & AVDD CURRENT \vspace{\My_x}\\
+
+    PWELL\_CURRENT\_THRESHOLD1 & 0x1C & 14 & mA & R/$\overline{\text{W}}$ & 0x00 & INA3221 PWELL critical threshold. If the PWELL line exceed this current draw the enable signals are set low. Error 0x06 \vspace{\My_x}\\
+    \hline
+\end{tabularx}
+
+\newpage
+
+\rowcolors{3}{gray!25}{white}
+\begin{tabularx}{\linewidth}{l c c c c c X} %7 items 11.75cm
+    \toprule
+    Register Name & Adress & Number of bits & Unit & Access & Default value & Description \\
+    \bottomrule
+
+    PWELL\_CURRENT\_THRESHOLD2 & 0x1E & 14 & mA & R/$\overline{\text{W}}$ & 0x00 & INA3221 AVDD warning threshold. Error 0x07 \vspace{\My_x}\\
+
+    PWELL\_VOLTAGE\_INA3221 & 0x20 & 14 & mV & R & - & PWELL voltage measured by the INA3221 \vspace{\My_x}\\
+
+    PWELL\_CURRENT & 0x22 & 14 & mV & R & - & PWELL Current measured by the INA3221 \vspace{\My_x} \\
+
+    ENABLE\_SIGNALS & 0x24 & 12 & - & R/$\overline{\text{W}}$ & 0x00 & Each bit represents an enable line controlling the power to a string. String 0 is tied to LSB. \vspace{\My_x}\\
+    
+    STRING\_DVDD\_CURRENT\_VALUE[n] & 0x26+[2n] & 13$\cdot$12 & mA & R & 0x00 & The DVDD current values for each string after the scan flag has been asserted. In total 12 registers with 13 bytes each. Each string register takes two bytes, and the address for string n is offset by 2n bytes. \vspace{\My_x}\\
+    
+    STRING\_AVDD\_CURRENT\_VALUE[n] & 0x3E+[2n] & 13$\cdot$12 & mA & R & 0x00 & The AVDD current values for each string after the scan flag has been asserted. In total 12 registers with 13 bytes each. Each string register takes two bytes, and the address for string n is offset by 2n bytes. \vspace{\My_x}\\
+
+    STRING\_PWELL\_CURRENT\_VALUE[n] & 0x56+[2n] & 13$\cdot$12 & mA & R & 0x00 & The PWELL current values for each string after the scan flag has been asserted. In total 12 registers with 13 bytes each. Each string register takes two bytes, and the address for string n is offset by 2n bytes. \vspace{\My_x}\\
+    \hline
+
+\end{tabularx}
+
+\newpage
+
+\rowcolors{3}{gray!25}{white}
+\begin{tabularx}{\linewidth}{l c c c c c X} %7 items 11.75cm
+    \toprule
+    Register Name & Adress & Number of bits & Unit & Access & Default value & Description \\
+    \bottomrule
+    CTRL1 & 0x6E & 8 & - & R/$\overline{\text{W}}$ & - & Control register A \vspace{\My_x} \\
+
+    CTRL2 & 0x70 & 8 & - & R/$\overline{\text{W}}$ & - & Control register B \vspace{\My_x} \\
+
+    CTRL3 & 0x72 & 8 & - & R/$\overline{\text{W}}$ & - & Control register C \vspace{\My_x} \\
+
+    ERROR\_COUNT & 0x74 & 8 & - & R/$\overline{\text{W}}$ & 0x00 & Amount of errors since last clear. Is cleared by writing 0x00 to this register. \vspace{\My_x} \\
+
+    ERROR\_MSG & 0x76 & 128 & - & R & 0x00 & Error messages stored in sequence, each byte is an error message. The most reccent error is placed in LSB. Automatically cleared by clearing ERROR\_COUNT \vspace{\My_x} \\
+
+    \hline
+
+\end{tabularx}
+
+
+\end{center}
+\end{landscape}
+\endgroup

@@ -6,7 +6,7 @@
 \label{section: pcs}
 \textit{This section describes the \acrlong{pcs}, how it is constructed and how it functions. It details the three parts that make up the \gls{pcs}, which are the control software, the MB Hub and the \gls{mb}. It additionally describes the IPbus communication protocol and how it is implemented in the control software.}
 
-The \gls{pcs} is the name of the system that delivers power to the ALPIDE-chips and monitors their performance. The system is made of three parts, the control software on the computer, the MB Hub, which is implemented on an \gls{fpga}, and a \acrlong{mb}. The \gls{mb} functions as the \gls{ppc} of this control system, controlling the power to the strings and monitoring the strings' temperature and current consumption. The \gls{mb} design and microcontroller software was developed by Birger Olsen. The MB Hub is a translation layer between the control software and \gls{mb}s; it uses IPbus firmware to safely and reliably transmit data packets from software to \gls{mb}. A single \gls{fpga} is used to send data to all 43 \gls{mb}s, meaning it must have the architecture to process data packets for every board. Martin Eggen and Jakob Hauser developed the \gls{fpga} design. The control software comprises a monitoring and configuration system responsible for configuring the \gls{mb}s through the \gls{fpga} and monitoring the strings' temperature and current consumption. The control software serves as the \gls{hmi} and database system for \gls{pcs}. This control system on the software side will be discussed more in \autoref{section: configuration} and \autoref{section: monitoring}. A figure of the \gls{pcs} is shown in \autoref{fig: PCS_overview}.
+The \gls{pcs} is the name of the system that delivers power to the ALPIDE-chips and monitors their performance. The system is made of three parts, the control software on the computer, the MB Hub, which is implemented on an \gls{fpga}, and a \acrlong{mb}. The \gls{mb} functions as the \gls{ppc} of this control system, controlling the power to the strings and monitoring the strings' temperature and current consumption. The \gls{mb} design and microcontroller software was developed by Birger Olsen. The MB Hub is a translation layer between the control software and \gls{mb}s; it uses IPbus firmware to safely and reliably transmit data packets from software to \gls{mb}. A single \gls{fpga} is used to send data to all 43 \gls{mb}s, meaning it must have the architecture to process data packets for every board. Martin Eggen and Jakob Hauser developed the \gls{fpga} design. The control software comprises a monitoring and configuration system responsible for configuring the \gls{mb}s through the \gls{fpga} and monitoring the strings' temperature and current consumption. The control software serves as the \gls{hmi} and database system for the \gls{pcs}. This control system on the software side will be discussed more in \autoref{section: configuration} and \autoref{section: monitoring}. A figure of the \gls{pcs} is shown in \autoref{fig: PCS_overview}.
 
 \begin{figure}[!htpb]
     \centering
@@ -44,14 +44,12 @@ The control software comprises \gls{api}s, \gls{gui}s, a monitoring system, and 
 \FloatBarrier
 
 
+The configuration system and monitoring system are made of custom Python classes that use the IPbus API to communicate with the ControlHub, which in turn communicates with the MB Hub over an Ethernet cable. The figure also shows the databases the two systems use to store data; MongoDB stores configuration sets, and InfluxDB + Grafana stores monitoring data and displays it to the user. These two systems will be discussed further in \autoref{section: configuration} and \autoref{section: monitoring}.
 
-The microcontroller on the \gls{mb} directly monitors the strings and turns them off if the threshold values are exceeded. However, displaying this information to the user is still important, or it would be impossible to troubleshoot and debug errors in the \gls{dtc}.
-
-\autoref{fig: software_overview} shows the control software in detail. The configuration system and monitoring system are made of custom Python classes that use the IPbus API to communicate with the ControlHub, which in turn communicates with the MB Hub over an Ethernet cable. The figure also shows the databases the two systems use to store data; MongoDB stores configuration sets, and InfluxDB + Grafana stores monitoring data and displays it to the user. These two systems will be discussed further in \autoref{section: configuration} and \autoref{section: monitoring}.
-
-The control software functions as the brain of the \gls{pcs}, the \gls{fpga} and the microcontroller on the \gls{mb} are simple by design, and more complicated processes are meant to be performed by the software. Processes such as debugging for faulty strings or transmission tests are created on the software side. Testing and verification of the \gls{pcs} is discussed in \autoref{ssec: test_setup}.
+The control software functions as the brain of the \gls{pcs}, the MB Hub and the microcontroller on the \gls{mb} are simple by design, and more complicated processes are meant to be performed by the software. Processes such as debugging for faulty strings or transmission tests are created on the software side. Testing and verification of the \gls{pcs} is discussed in \autoref{ssec: test_setup}.
  
 Both the monitoring and configuration systems use \gls{gui}s to interface with the user, and a top-level \gls{gui} unifies both systems. An image of the top level \gls{gui} is shown in \autoref{fig: main_gui}.
+
 
 \begin{figure}[!ht]
     \centering
@@ -59,13 +57,13 @@ Both the monitoring and configuration systems use \gls{gui}s to interface with t
     \caption{Image of the main hub GUI. The GUI has buttons for opening the monitoring and configuration interfaces, starting the configuration of the \gls{mb}s, and a logging window for displaying messages.}
     \label{fig: main_gui}
 \end{figure}
-\FloatBarrier 
+
 
 The main hub \gls{gui} serves as the top level for the control software; this means the user can start the \gls{gui} and access all functionalities of the control software. This includes setting and creating configuration sets using the configuration \gls{gui}, starting and stopping the monitoring process, opening the Grafana web tool, and starting the configuration and powering algorithm.
 
-The main hub \gls{gui} has buttons that will open up the configuring and monitoring \gls{gui}s, respectively and also has a button that will initiate the configuration process. Additionally, the window has a logging window to display the status and actions performed by the user.
+The main hub \gls{gui} has buttons that will open up the configuring and monitoring \gls{gui}s, and also has a button that will initiate the configuration process. Additionally, the window has a logging window to display the status and actions performed by the user.
 
-
+\newpage
 \subsection{IPbus}
 \label{ssec: IPbus}
  \subsubsection{Overview}
@@ -82,9 +80,7 @@ IPbus consists of software and firmware that together forms a control link from 
 
 The IPbus firmware is designed to be easy to implement, and there are example designs for several \gls{fpga} boards available which can be used. One of the reasons we chose to use the KCU105 board for this project was because it had an example design that could be repurposed for the \gls{pct}-project.
 
-$\mu$HAL is the control software's interface to communicate with the IPbus module on the \gls{fpga}. This interface allows for issuing read and write requests and dispatching them to the \gls{fpga} registers. For \gls{pcs}, we will use the $\mu$HAL Python library to interface IPbus with custom Python classes.
-
-The ControlHub software serves as a common access point for multiple $\mu$HAL entities on the software side. This is useful in larger systems where multiple systems use IPbus to transmit data. \autoref{fig: controlhub_example} shows ControlHub used in a typical control system.
+$\mu$HAL is the control software's interface to communicate with the IPbus module on the \gls{fpga}. This interface allows for issuing read and write requests and dispatching them to the \gls{fpga} registers. For \gls{pcs}, we will use the $\mu$HAL Python library to interface IPbus with custom Python classes. The ControlHub software serves as a common access point for multiple $\mu$HAL entities on the software side. This is useful in larger systems where multiple systems use IPbus to transmit data. \autoref{fig: controlhub_example} shows ControlHub used in a typical control system.
 
 \begin{figure}[!htpb]
     \centering
@@ -98,15 +94,39 @@ The ControlHub software serves as a common access point for multiple $\mu$HAL en
 
 \subsubsection{IPbus software}
 
-The IPbus software uses XML-files to store the address map of modules on the \gls{fpga}, as well as the register map of said modules. The address map of the \gls{fpga} design is listed in Appendix \ref{appendix: fpga_map}. The address map contains the address value for each module, while the register map contains more detailed information about the registers. The individual module address maps are stored in separate XML-files. the XML-file for the com\_modules is shown in \autoref{fig: xml_example}.
+The IPbus software uses XML-files to store the address map of modules on the \gls{fpga}, as well as the register map of said modules. The address map of the \gls{fpga} design is listed in Appendix \ref{appendix: fpga_map}. The address map contains the address value for each module, while the register map contains more detailed information about the registers. The individual module address maps are stored in separate XML-files. the XML-file for the com\_modules is shown in \autoref{lst:foo}.
+\lstset{frame=tb,
+  language=XML,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{dkgreen},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
 
-\begin{figure}[!htpb]
-    \centering
-    \includegraphics[scale=0.65, width = 15cm]{images/com_module_xml.png}
-    \caption{XML file of the com\_module used within IPbus software.}
-    \label{fig: xml_example}
-\end{figure}
-\FloatBarrier
+
+
+\begin{lstlisting}[caption={XML code for the com\_module used within IPbus software},captionpos=b, label=lst:foo]
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<node id="monitor_module">
+    <node id="control" address="0x00000001" permission="w" description="not in use." parameters="reset=0x5"/>
+    <node id="status" address="0x00000002"  permission="r" description="not in use" parameters="reset=0x0"/>
+    <node id="TX" address="0x00000003"  permission="w" description="Writes data to corresponding MB" parameters="reset=0x0"/>
+    <node id="RX" address="0x00000004"  permission="r" description="Reads a 32-bit vector from the corresponding MB" parameters="reset=0x0"/>
+    <node id="reset" address="0x00000005"  permission="wr" description="Resets both TX and RX FIFO to clear them" parameters="reset=0x0"/>
+</node>
+
+    \end{lstlisting}
+
+
 
 The files contain information about each register, such as address value, \gls{rnw} access, and description. IPbus XML-files support additional functions, like masking bits or writing to a memory block, described in the IPbus user guide\cite{ipbus_guide}, but for this project, such functionality is not necessary.
 
@@ -118,19 +138,46 @@ The $\mu$HAL Python library is vast, but for the end user, there are only three 
     \item Node
 \end{itemize}
 
-ConnectionManager contains the HwInterface object for each connected IPbus module and IP address information. The HwInterface class is used when communicating with the IPbus module. HwInterface contains all node classes for each module defined in the address map. The node class is analogous to the physical registers on the \gls{fpga}; they contain functions for reading and writing to the physical register the node represents. \autoref{fig: hw_example} shows how one typically uses HwInterface to read and write from registers.
+ConnectionManager contains the HwInterface object for each connected IPbus module and IP address information. The HwInterface class is used when communicating with the IPbus module. HwInterface contains all node classes for each module defined in the address map. The node class is analogous to the physical registers on the \gls{fpga}; they contain functions for reading and writing to the physical register the node represents. \autoref{lst:hwinterface} shows how one typically uses HwInterface to read and write from registers.
 
-\begin{figure}[!htpb]
-    \centering
-    \includegraphics[scale=0.8]{images/HwInterface_example.png}
-    \caption{Example of setting up the HwInterface in Python and using it to perform read and write operations.}
-    \label{fig: hw_example}
-\end{figure}
-\FloatBarrier
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{dkgreen},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
 
-A read or write is performed by retrieving the node for a register and issuing a write or read from the node object. Note that the read or write functions only puts the request in a packet; it does not send it. It will only send the packet of requests when the dispatch function is called. This reveals a crucial aspect of IPbus; it can send data packets simultaneously. IPbus has a single-word latency of 250 $\mu$s when transferring data, which is significantly larger than other control protocols. However, by concatenating the data into larger packets before sending them, IPbus can increase its throughput up to a factor of 2000\cite{IPbus}. This means that IPbus performs optimally if we limit network dispatches as much as possible.
 
-The conclusion is that we must design the control software around limiting dispatches. This allows us to fully utilize the IPbus throughput and ensure that our system is quick and responsive. \autoref{ssec: mcu_api} discusses how the \gls{api} for the \gls{fpga} is designed to allow for sending multiple data packets in one transmission.
+\begin{lstlisting}[caption={Example of setting up the HwInterface in python and using it to perform read and write operations.},captionpos=b, label=lst:hwinterface]
+#Initialize HwInterface
+manager = uhal.ConnectionManager("file://../bsp/pRU-connections.xml")
+hw = manager.getDevice("demo_layer")
+
+#Perform a write operation
+hw.getNode("monitor_module_1.TX").write(0b010101010)
+hw.dispatch()
+
+#Perform a read operation
+RX = hw.geNode("monitor_module_1.RX").read()
+hw.dispatch()
+
+    \end{lstlisting}
+
+
+
+A read or write is performed by retrieving the node for a register and issuing a write or read from the node object. Note that the read or write functions only puts the request in a packet; it does not send it. It will only send the packet of requests when the dispatch function is called. This reveals a crucial aspect of IPbus, it can send data packets simultaneously. IPbus has a single-word latency of 250 $\mu$s when transferring data, which is significantly larger than other control protocols. However, by concatenating the data into larger packets before sending them, IPbus can increase its throughput up to a factor of 2000\cite{IPbus}. This means that IPbus performs optimally if we limit network dispatches as much as possible.
+
+The conclusion is that we must design the control software around limiting dispatches. This allows us to fully utilize the IPbus throughput and ensure that our system is quick and responsive. Subsection \ref{ssec: mcu_api} discusses how the \gls{api} for the \gls{fpga} is designed to allow for sending multiple data packets in one transmission.
 
 
 \subsection{MB Hub}
@@ -143,16 +190,16 @@ An \gls{fpga} must be chosen to be used in the \gls{pcs}, and there are specific
     \item It must have $2 \cdot 2 \cdot 43$ I/O pins, to communicate with all 43 layers using \acrshort{lvds}.
     \item The \gls{fpga} must be relatively new and still updated, so it will not become obsolete in the coming years.
     \item It must not be too expensive, although this is not a hard requirement, due to only needing one \gls{fpga} for the entire system.
-    \item The \gls{fpga} should have an example design for IBbus available, this will cut the development time for the \gls{fpga} design by a large margin.
+    \item The \gls{fpga} should have an example design for IPbus available, this will cut the development time for the \gls{fpga} design by a large margin.
 \end{itemize}
 
-For this project, we chose to use the Xilinx Kintex UltraScale KCU105 to meet the demands for the number of I/O pins and have an example IPbus design available provided by the developers of IPbus  It was decided to use the evaluation board for the hardware implementation since only one \gls{fpga} is needed for this project.
+For this project, we chose to use the Xilinx Kintex UltraScale KCU105 to meet the demands for the number of I/O pins and have an example IPbus design available provided by the developers of IPbus. It was decided to use the evaluation board for the hardware implementation since only one \gls{fpga} is needed for this project.
 
-The \gls{fpga} will be responsible for communicating with all the \gls{mb}s. It needs to handle individual read and write for each layer and have global functions for broadcasting messages. It will also need to be able to handle errors in case something goes wrong on any of the \gls{mb}s. 
+The \gls{fpga} will be responsible for communicating with all the \gls{mb}s. It needs to handle individual read and write for each layer and have global functions for broadcasting messages. It also handle errors in case something goes wrong on any of the \gls{mb}s. 
 
 The \gls{fpga} design comprises 43 com\_modules, each containing two registers for communicating with the \gls{mb}, TX and RX. Each module would only be responsible for sending and receiving data through the TX and RX registers, no direct information of the \gls{mb} is stored in the \gls{fpga}. This means less data is copied, reducing the chance of storing erroneous data. The modules also need a status register to track eventual errors from the \gls{mb}. Martin Eggen and Jakob Hauser implemented this design. The com\_module and global module address map are given in Appendix \ref{appendix: fpga_map}. 
 
-These address maps are set in the IPbus module files. Each module on the \gls{fpga} contains a corresponding XML file in which the address map for the module is set. A figure of their implementation is shown in \autoref{fig: fpga_block}.
+A figure of their implementation is shown in \autoref{fig: fpga_block}.
 
 
 \begin{figure}[!htpb]
@@ -165,7 +212,7 @@ These address maps are set in the IPbus module files. Each module on the \gls{fp
 
 This design has a "com\_module" for each layer that handles write and read transactions to and from the microcontroller using a standard \gls{usart} protocol. In addition, these modules use a \gls{fifo} to allow many data packets to be sent in quick succession without needing to wait for the transmission to finish.
 
-The global module has several functions for configuring and transmitting data within the MB Hub. The global module has registers that define the baud rate used, which com\_module is enabled, and a global reset of the com\_modules. One of the crucial features of the module is the broadcast functionality. Writing instructions to all 43 com\_modules is repetitive and takes more time to perform; the broadcast function solves this by simply writing one message to the broadcast TX register, which will write the same message to the TX register of each com\_module. This feature is utilized in the configuration and monitoring processes to speed them up. Finally, the global module contains an enable register for the com\_modules on the \gls{fpga}. The enable register allows us to turn off com\_modules that are not in use, which helps reduce the amount of redundant data retrieved by the control software.
+The global module has several functions for configuring and transmitting data within the MB Hub. The global module has registers that define the baud rate used, which com\_module is enabled, and a global reset of the com\_modules. One of the crucial features of the module is the broadcast functionality. Writing instructions to all 43 com\_modules is repetitive and takes more time to perform. The broadcast function solves this by simply writing one message to the broadcast TX register, which will write the same message to the TX register of each com\_module. This feature is utilized in the monitoring processes to optimize the data acquisition. Finally, the global module contains an enable register for the com\_modules on the \gls{fpga}. The enable register allows us to turn off com\_modules that are not in use, which helps reduce the amount of redundant data retrieved by the control software.
 
 
 Interfacing with the \gls{fpga} design requires us to know the operations performed by the \gls{fpga} when reading or writing to the microcontroller. For example, when a data packet is sent to the TX register of a com\_module, the \gls{fpga} will send it down to the microcontroller and information from the transaction is always sent to the respective RX register. \autoref{fig: handshake_vals} shows the data flow during a read and a write between the \gls{fpga} and microcontroller.
@@ -178,9 +225,9 @@ Interfacing with the \gls{fpga} design requires us to know the operations perfor
 \end{figure}
 \FloatBarrier
 
-When performing a read, the data is sent to the RX register, including which address was read, and RnW bit. When performing a write, handshake values from the microcontroller are inserted into the RX register, and the data is sent from the TX register. Important to note here that the data value from the write operation originates from the \gls{fpga}, not the microcontroller. These bits will virtually always match up with the sent data packet, and therefore is not interesting to look at when we are debugging for erroneous bits.
+When performing a read, the data is sent to the RX register, including which address was read, and RnW bit. When performing a write, handshake values from the microcontroller are inserted into the RX register, and the data is sent from the TX register. It is important to note here that the data value from the write operation originates from the \gls{fpga}, not the microcontroller.
 
-All data written to the TX register of a com\_module is sent down to the microcontroller through 2 \gls{lvds} pins, using \acrshort{usart}. The communication between is described in the timing diagrams\cite{birger} of \autoref{fig: master_init} to \autoref{fig: slave_read}
+All data written to the TX register of a com\_module is sent down to the microcontroller through 2 \gls{lvds} pins, using \acrshort{usart}. The communication between is described in the timing diagrams of \autoref{fig: master_init} to \autoref{fig: slave_read}\cite{birger}.
 
 \begin{figure}[!htpb]
     \centering
@@ -206,25 +253,23 @@ All data written to the TX register of a com\_module is sent down to the microco
 \end{figure}
 \FloatBarrier
 
-The master initiates an operation with a start bit and sends the address value and the RnW bit. Then, the slave performs a handshake by sending the received address back to the \gls{fpga}. The data is always sent with two packets of 8 bits, starting with the high bits and then the low bits. This is done due to the limitations of the microcontroller being 8-bit. \notinmain{legg til bilde av oscilloskop usart kommunikasjon her}
+The master initiates an operation with a start bit and sends the address value and the RnW bit. Then, the slave performs a handshake by sending the received address back to the \gls{fpga}. The data is always sent with two packets of 8 bits, starting with the high bits and then the low bits. This is done due to the limitations of the microcontroller being 8-bit. 
 
-
-\notinmain{skriv om data header og hvordan den blir lest, eventuelt skriv om busy signal?}
 
 \subsection{Monitoring Board}
 \label{ssec: microcontroller}
 The \gls{mb} is the equivalent of the \gls{ppc} in this system, responsible for distributing power to the strings and directly monitoring their voltage levels, current consumption and temperature. The board and microcontroller software were developed by Birger Olsen at the same time as this thesis was written. This section focuses on the microcontroller software and its interaction with the MB Hub. The board delivers DVDD, AVDD, and PWELL current to the strings. Additionally, the board measures the current consumption, voltage levels and temperature of the strings. \autoref{fig: mb_schematic} shows a simplified block schematic of the board.
 
-\notinmain{source birger for bildet}
-\begin{figure}[!htpb]
+
+\begin{figure}[!ht]
     \centering
-    \includegraphics[width=10cm, scale=1]{images/MonitorBoardBlockSchematic.pdf}
+    \includegraphics[scale=0.7]{images/MonitorBoardBlockSchematic.pdf}
     \caption{Simplified block schematic of the \gls{mb}\cite{birger}}
     \label{fig: mb_schematic}
 \end{figure}
-\FloatBarrier
 
- An INA3221 chip measures the current consumption of the strings, and the temperature is measured through a PT1000 element. The system on the \gls{mb} is controlled by an AVR128DB48 microcontroller. As mentioned in \autoref{section: fpga_design}, \acrshort{usart} is currently used for communication between the MB Hub and the microcontroller.
+
+ An INA3221 chip measures the current consumption of the strings, and the temperature is measured through a PT1000 element. The system on the \gls{mb} is controlled by an AVR128DB48 microcontroller. As mentioned in \autoref{section: fpga_design}, \acrshort{usart} is currently used for the communication between the MB Hub and the microcontroller.
 
 The register map for the microcontroller is given in Appendix \ref{appendix: register_map}. The address map consists of threshold level registers, general purpose registers, control registers, and error handling registers. The registers on the microcontroller are, by default, 16-bit.
 
@@ -242,7 +287,7 @@ The data bits only have a purpose during a write operation; the 16 least signifi
 
 The board measures DVDD, AVDD, PWELL, and temperature, and the microcontroller has threshold registers for each of these measurements. The microcontroller will turn off the strings if the measurements exceed these thresholds. Setting up these registers with appropriate values is a part of the configuration procedure, which is discussed more in \autoref{section: configuration}.
 
-The microcontroller has three control registers; writing to the registers allows control software to execute custom functions built into the microcontroller. This would allow us to perform relatively complex functions without transmitting many data packets through the \gls{pcs}. Functions such as checking for abnormal current consumption in the strings could be performed significantly faster with a custom function on the microcontroller. The control register feature is only in a conceptual state, and it has not been fully implemented in the current microcontroller design. CTRL1 register only has a few functions for resetting register values implemented; CTRL2 and CTRL3 are reserved for future use.
+The microcontroller has three control registers; writing to the registers allows control software to execute custom functions built into the microcontroller. This would allow us to perform relatively complex functions without transmitting many data packets through the \gls{pcs}. Functions such as checking for abnormal current consumption in the strings could be performed significantly faster with a custom function on the microcontroller. The control register feature is only in a conceptual state, and it has not been fully implemented in the current microcontroller design. CTRL1 register has functions for resetting register values and scanning for strings with high current consumption; CTRL2 and CTRL3 are reserved for future use.
 
 
 The microcontroller has two registers for managing errors, "error count" and "error message". These registers keep track of the number of errors that have occurred and the error codes. Each error code corresponds to an error message given in \autoref{tab:errors}.

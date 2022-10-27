@@ -4,10 +4,10 @@
 
 \section{Monitoring System}
 \label{section: monitoring}
-\textit{This section describes the solution for a monitoring system for the \gls{psu}. The chapter tackles the characteristics of the system and what is needed for this project, along with the choice of time-series database used to store the data points. Features such as the specification of storing monitoring data and displaying it to the user using third party software is also discussed. Finally, the different types of data filtering and how Panda data frame can be used to customize the filtering of data points are discussed.}
+\textit{This section describes the solution for a monitoring system for the \gls{mb}. The chapter tackles the characteristics of the system and what is needed for this project, along with the choice of time-series database used to store the data points. Features such as the specification of storing monitoring data and displaying it to the user using third party software is also discussed. Finally, the different types of data filtering and how Pandas dataframe can be used to customize the filtering of data points are discussed.}
 
 
-The microcontroller on the \gls{mb} directly monitors the strings' current, temperature, and voltage levels. Most importantly, it is responsible for turning off the strings if they exceed these threshold values. The microcontroller is responsible for turning off the strings because it is a time-critical event; any delay in turning off the strings can damage the ALPIDE-sensors. However, the user still needs to know the status of the \gls{mb}. Knowing the current draw and the strings' temperature is essential to effectively troubleshoot the \gls{dtc} while performing tests. Therefore, it is necessary to create a monitoring system from the client side that can retrieve the monitoring data from the \gls{mb} and display it to the user. It is logical to store the data in a time series database, which is a time-sensitive database that timestamps the data inserted. The data points from the database can be displayed using third-party software. However, not all data retrieved is valuable to the user; data points within the uncertainty margin of the previous data point are meaningless to track. The data points should be down-sampled to reduce data storage and strain on the database server.
+The microcontroller on the \gls{mb} directly monitors the strings' current, temperature, and voltage levels. Most importantly, it is responsible for turning off the strings if they exceed these threshold values. The microcontroller is responsible for turning off the strings because it is a time-critical event; any delay in turning off the strings can damage the ALPIDE-sensors. However, the user still needs to know the status of the \gls{mb}. Knowing the current draw and the strings' temperature is essential to effectively troubleshoot the \gls{dtc} while performing tests. Therefore, it is necessary to create a monitoring system from the client side that can retrieve the monitoring data from the \gls{mb} and display it to the user. It is logical to store the data in a time series database, which is a time-sensitive database that timestamps the data inserted. The data points from the database can be displayed using third-party software. However, not all data retrieved is valuable to the user. The data points should be downsampled to reduce data storage and strain on the database server.
  
 InfluxDB was chosen because it is an open-source, popular time series database with a large online community. In addition, its compatibility with the graphing tool Grafana allows us to display the data with professional graphing tools. Influx and Grafana also feature intuitive web interfaces that are user-friendly and flexible. InfluxDB also supports the Telegraf plugin, which allows for seamless monitoring of database performance. 
  
@@ -25,11 +25,10 @@ InfluxDB was chosen because it is an open-source, popular time series database w
  
  The monitoring system sends data to InfluxDB and Grafana interfaces with InfluxDB to display the data points. 
 
-\notinmain{subsections eg bør ha med: monitoring API, InfluxDB, Grafana, Filtering/pandaframe, characteristics of monitoring operation}
 
 
 \subsection{Monitoring API}
-The monitoring system shown in \autoref{fig: pcs_monitoring} is made of several classes responsible for retrieving data from the \gls{mb}s, processing it, and sending it to the database. In addition, a dedicated monitoring \gls{api} class is created for the system, which handles data polling and interfaces with the database. A class diagram of the hierarchy of the monitoring \gls{api} is shown in \autoref{fig: monitor_hierarchy}.
+The monitoring system shown in \autoref{fig: pcs_monitoring} is made of several classes responsible for retrieving data from the \gls{mb}s, processing it, and sending it to the database. A dedicated monitoring \gls{api} class is created for the system, which handles data polling and interfaces with the database. A class diagram of the hierarchy of the monitoring \gls{api} is shown in \autoref{fig: monitor_hierarchy}.
 
  \begin{figure}[!htpb]
     \centering
@@ -41,7 +40,7 @@ The monitoring system shown in \autoref{fig: pcs_monitoring} is made of several 
 
 The top level of the \gls{api} interfaces with the microcontroller through the \textit{mcu\_api}. The database is interfaced using a custom class, \textit{influx\_api}, which interfaces with influxDB to store data in the database and filter the data using a pandaframe custom class. The primary function of the monitoring API class is to poll the data from the microcontroller and insert it into the Influx database. 
 
-Polling the data involves retrieving the measured voltage and current of DVDD, AVDD and PWELL and the measured temperature reading from the PT1000 element. In addition, the monitoring API must be able to handle errors from the \gls{mb}. A detailed discussion of the error handling is given in \autoref{ssec: microcontroller}. The monitoring API must also poll these registers during the monitoring, which requires its own process. The polling function only polls data once and then returns error messages. This allows the function to return error messages to the monitoring \gls{gui}. \autoref{fig: monitor_flow} shows the flowchart performed when the polling function is called.
+Polling the data involves retrieving the measured voltage and current of DVDD, AVDD and PWELL and the measured temperature reading from the PT1000 element. In addition, the monitoring API must be able to handle errors from the \gls{mb}. A detailed discussion of the error handling of the \gls{mb} is given in \autoref{ssec: microcontroller}. The monitoring API must poll the error registers during the monitoring, which requires its own process. The polling function only polls data once and then returns error messages. This allows the function to return error messages to the monitoring \gls{gui}. \autoref{fig: monitor_flow} shows the flowchart performed when the polling function is called.
 
 \begin{figure}[!ht]
     \centering
@@ -51,7 +50,7 @@ Polling the data involves retrieving the measured voltage and current of DVDD, A
 \end{figure}
 \FloatBarrier
 
-Polling the data is simple, it uses the microcontroller API to broadcast and retrieve the data from all of the monitoring addresses. After inserting the data into the database, the function checks if any errors have occurred on the microcontroller, if yes, it will poll the error codes, convert them to messages and return them.
+Polling the data is simple, it uses the microcontroller API to broadcast and retrieve the data from all of the monitoring addresses. After inserting the data into the database, the function checks if any errors have occurred on the microcontroller. If yes, it will poll the error codes, convert them to messages and return them.
 
 The polling function only polls the data once; the \gls{gui} which instantiates the monitoring \gls{api} must continuously poll data using this function during the monitoring process. The flowchart of this procedure in the \gls{gui} class is given in \autoref{fig: monitor_overhead}.
 
@@ -63,10 +62,10 @@ The polling function only polls the data once; the \gls{gui} which instantiates 
 \end{figure}
 \FloatBarrier
 
-From the figure, a Boolean flag called "Monitor Flag" is set high and the process polls the data from the Monitoring board. if the polling function returns errors, they are then displayed in the \gls{gui} logging window. This monitoring process will continue until an outside function sets the Boolean flag low. Displaying the errors from the microcontroller in the \gls{gui} is a temporary solution for handling errors. The design decision has yet to be made on how to process the errors, for now they are only displayed in the logging window.
+From the figure, a Boolean flag called "Monitor Flag" is set high and the process polls the data from the \gls{mb}. If the polling function returns errors, they are then displayed in the \gls{gui} logging window. This monitoring process will continue until an outside function sets the Boolean flag low. Displaying the errors from the microcontroller in the \gls{gui} is a temporary solution for handling errors. The design decision has yet to be made on how to process the errors, for now they are only displayed in the logging window.
 
 
-The monitoring \gls{api} polls data based on the namedtuples stored in the \textit{monitor\_addr} list in the \textit{mcu\_addr} package. This means that one can freely change the monitoring addresses by adding or removing tuples in the list. This is useful if changes to the monitoring process are made, and also makes it easier to repurpose the \gls{api} to other control systems in the \gls{pct}-project. In addition, each error message has a corresponding named tuple which is used to convert error code to message, as well as indicating the severity of the error.
+The monitoring \gls{api} polls data based on the namedtuples stored in the \textit{monitor\_addr} list in the \textit{mcu\_addr} package. This means that one can freely change the monitoring addresses by adding or removing namedtuples in the list. This is useful if changes to the monitoring process are made, and also makes it easier to repurpose the \gls{api} to other control systems in the \gls{pct}-project. In addition, each error message has a corresponding namedtuple which is used to convert error code to message, as well as indicating the severity of the error.
 
 
 \subsection{Monitoring GUI}
@@ -75,13 +74,13 @@ The actual monitoring and overseeing of the polled data is done by Grafana which
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[scale=0.6]{images/monitoring_gui.png}
+    \includegraphics[scale=0.5]{images/monitoring_gui.png}
     \caption{Image of the monitoring GUI, showing the buttons for managing the polling, as well as the log window.}
     \label{fig: monitor_gui}
 \end{figure}
 \FloatBarrier
 
-The \gls{gui} is relatively simple with buttons to start and stop monitoring, as well as one for opening the Grafana display in the web browser. The log window notifies the user when the monitor process begins, as well as displaying any errors from the monitoring directly. These errors are also sent to the database. It also graphically displays which layers are active on the right side, where green is on and red is off. Note that this pattern only notifies if a com\_module is turned off on the \gls{fpga}, not the actual layers themselves.
+The \gls{gui} is relatively simple with buttons to start and stop monitoring, as well as one for opening the Grafana display in the web browser. The log window notifies the user when the monitor process begins, as well as displaying any errors from the monitoring directly. It also graphically displays which layers are active on the right side, where green is on and red is off. This pattern only notifies if a com\_module is turned off on the MB Hub, not the actual layers themselves.
 
 \subsection{InfluxDB}
 \label{ssec: influxdb}
@@ -91,23 +90,40 @@ The InfluxDB web interface has a graphing tool, where queries can be set up and 
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[width=17cm, scale=4]{images/influx_explore.png}
-    \caption{Image of the explore tab in the influx web interface displaying arbitrary data inserted by the monitoring API.}
+    \includegraphics[width=12cm]{images/influx_explore.png}
+    \caption{Image of the explore tab in the influx web interface, displaying arbitrary data inserted by the monitoring API.}
     \label{fig: influx_explore}
 \end{figure}
 \FloatBarrier
 
-The explore tab is useful for observing the data and viewing the raw data as it is inserted into the database. The lower part of \autoref{fig: influx_explore} shows the query tabs, which can be used to create queries from your buckets. The web interface also allows for creating dashboards, where many individual graphs can be displayed at once, the Telegraf plugin, which is mentioned later this section, is made of such a dashboard.
+The explore tab is useful for observing the data and viewing the raw data as it is inserted into the database. The lower part of \autoref{fig: influx_explore} shows the query tabs, which can be used to interactively create queries. The web interface also allows for creating dashboards, where many individual graphs can be displayed at once. The Telegraf plugin, which is mentioned later this section, is made of such a dashboard.
 
-InfluxDB V2 is used for this project, the main difference between previous versions and V2 is the use of the new functional data scripting language specifically designed for InfluxDB, called Flux. Flux is designed to unify querying and processing data in the database, able to retrieve the data points from the database and automatically filter them. This query language is integrated into the web interfaces for both InfluxDB and Grafana, both having example queries that can be generated without needing to know the syntax of Flux. An example of a Flux query is shown in \autoref{fig: flux_example}.
+InfluxDB V2 is used for this project, the main difference between previous versions and V2 is the use of the new functional data scripting language specifically designed for InfluxDB, called Flux. Flux is designed to unify querying and processing data in the database, able to retrieve the data points from the database and automatically filter them. This query language is integrated into the web interfaces for both InfluxDB and Grafana, both having example queries that can be generated without needing to know the syntax of Flux. An example of a Flux query is shown in \autoref{lst: flux_example}.
 
-\begin{figure}[!htpb]
-    \centering
-    \includegraphics[width=17cm, scale=4]{images/flux_example.png}
-    \caption{Example of a flux query retrieving data and filtering it.}
-    \label{fig: flux_example}
-\end{figure}
-\FloatBarrier
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{dkgreen},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+ \begin{lstlisting}[caption={Example of a flux query retrieving data and filtering it.},captionpos=b, label=lst: flux_example]
+from(bucket: "example-bucket")
+    |> range(start: -1d)
+    |> filter(fn: (r) => r._measurement == "example-measurement" and r._field == "example-field")
+    |> mean()
+    |> yield(name: "_results")
+    \end{lstlisting}
+
 
 In the example, the "\textit{from}" command chooses which source the data should be retrieved from, "\textit{range}" specifies the time range to be filtered, and "\textit{filter}" can filter the data based on tags or measurement type. The "\textit{mean}" function calculates the average of the values, Flux has many functions for filtering the data points based on common filtering techniques.
 
@@ -126,29 +142,29 @@ InfluxDB also supports the Telegraf plugin, which allows for quick and easy moni
 \end{figure}
 \FloatBarrier
 
-Telegraf is used to measure the impact the monitoring operation has on the database. This will be discussed more in \autoref{ssec: char_mon}.
+From the figure, Telegraf monitors several parameters by default, including CPU usage, memory usage and system load. These measurements can be used to assess the performance of the database.
 
 \subsection{Grafana}
 \label{ssec: grafana}
-Grafana is an open-source interactive web interface that can display data in several ways. It can provide graphs, histograms, and chart solutions for displaying data in a web application. Grafana was chosen as the graphing tool for this project due to its ability to display data clearly, and concisely, create interactive plots, and be directly compatible with InfluxDB.
+Grafana is an open-source interactive web interface that can display data in several ways. It can provide graphs, histograms, and chart solutions for displaying data in a web application. Grafana was chosen as the graphing tool for this project due to its ability to display data clearly and concisely, create interactive plots, and be directly compatible with InfluxDB.
 
 Grafana is hosted on a server, but unlike InfluxDB and MongoDB, we do not need to create a custom API to communicate with it. Connecting Grafana to influxDB and setting up the dashboard for the monitoring can all be performed in the Grafana web interface. After connecting the Influx database to Grafana, creating graphs for Grafana to plot is done by setting up a Flux query for the specified measurement.
 
 For this project, we want a clear dashboard that shows off all the measurements being retrieved from the \gls{mb}s, making it easy for the user to quickly spot abnormalities, such as high temperature. There are three different measurement types and 43 layers for each measurement that needs to be displayed. Plotting 43$\cdot$3 graphs on a single dashboard would lead to an illegible and cluttered dashboard. The solution is to plot a histogram of each measurement, showing the last recorded value in the database. Grafana's interactive plots let us set a hyperlink in each histogram that points to the Grafana graph of the respective histogram's measurement. The histograms give the user an overview of all measurements and the ability to quickly assess each measurement individually with one click.
 
-an overview dashboard was created in Grafana and an image of this dashboard is shown in \autoref{fig: grafana overview}.
+An overview dashboard was created in Grafana and an image of this dashboard is shown in \autoref{fig: grafana overview}.
 
-\begin{figure}[!htpb]
+\begin{figure}[!ht]
     \centering
-    \includegraphics[width=16cm, scale=4]{images/grafana_overview.png}
+    \includegraphics[scale=0.4,height=9.4cm]{images/grafana_overview.png}
     \caption{Image of the overview dashboard inside the Grafana web application.}
     \label{fig: grafana overview}
 \end{figure}
 \FloatBarrier
 
-The above figure shows the overview dashboard displaying arbitrary data that has been inserted into the Influx database. The dashboard is made out of three rows, one for each measurement type, and clicking on a histogram will lead to a second dashboard that plots the data as a function of time for the measurement the user clicked on. The second dashboard is made of three plots, one for each measurement type. A custom variable is added to this dashboard that allows the user to change the layer from which the measurements are retrieved from. An image of the second dashboard is shown in \autoref{fig: grafana second}.
+The above figure shows the overview dashboard displaying arbitrary data that has been inserted into the Influx database. The dashboard is made out of three tabs, one for each measurement type, and clicking on a histogram will lead to a second dashboard that plots the data as a function of time for the measurement the user clicked on. The second dashboard is made of three plots, one for each measurement type. A custom variable is added to this dashboard that allows the user to change the layer from which the measurements are retrieved from. An image of the second dashboard is shown in \autoref{fig: grafana second}.
 
-\begin{figure}[!htpb]
+\begin{figure}[!ht]
     \centering
     \includegraphics[width=15cm, scale=4]{images/grafana_2nd_dashboard.png}
     \caption{Image of the measurement dashboard inside the Grafana web application.}
@@ -156,24 +172,22 @@ The above figure shows the overview dashboard displaying arbitrary data that has
 \end{figure}
 \FloatBarrier
 
-Using these two dashboards allow for easy and seamless monitoring of the data retrieved from the \gls{mb}s. Both dashboards are exported to JSON-format and stored on the GitHub repository. Setting up the dashboards on a new Grafana server would only require uploading the JSON-document for each dashboard onto the Grafana web application.
+Using these two dashboards allows for easy and seamless monitoring of the data retrieved from the \gls{mb}s. Both dashboards are exported to JSON-format and stored on the GitHub repository. Setting up the dashboards on a new Grafana server would only require uploading the JSON-document for each dashboard onto the Grafana web application.
 
 
-\notinmain{snakke om flux, vise eksempel, og så kanskje oppsettet av databasen, retention policy}
 
 \subsection{Characteristics of monitoring operation}
 \label{ssec: char_mon}
-\notinmain{ta med denne biten i introen på ein eller annen måte}
-Attributes such as read and write speeds, storage space, and database performance are all important characteristics that needs to be determined before we can begin designing and assess the system.
+Attributes such as read and write speeds, storage space, and database performance are all important characteristics that need to be determined before we can begin designing and assess the system.
 
-\notinmain{del denne opp i subsubsections}
+
 \subsubsection{Transmission speed of monitoring process}
-During the monitoring operation, the temperature must be measured, as well as the current consumption, and voltage levels of DVDD, AVDD, and PWELL for all 43 layers, along with the error register. This leads to reading 8*43 registers every time we poll the \gls{mb}s. There is no inherent reason to have a delay between the polling, so polling the data as often as possible is the logical step to take. The transmission speed of the data will then not only determine the speed of data acquisition, but also the amount of data points received per second, which determines how much storage space is needed, and the sampling rate of the measurements.
+During the monitoring operation, the temperature must be measured, as well as the current consumption, and voltage levels of DVDD, AVDD, and PWELL for all 43 layers, along with the error register. This leads to reading 8*43 registers every time we poll the \gls{mb}s. There is no inherent reason to have a delay between the polling, so the data is polled as quickly as possible. The transmission speed of the data will then not only determine the speed of data acquisition, but also the amount of data points received per second, which determines how much storage space is needed, and the sampling rate of the measurements.
 
  For the monitoring system, a read request must be sent to all layers and then client software must retrieve the data from the RX register of every com\_module. This translates to writing to the global TX register and reading 43 registers from the com\_modules. This action must be performed 8 times, to get all measurements. The time for polling all measurements from every layer once then becomes:
 
 \begin{equation} \label{eqn:monitoring_timing}
-8*(t_{write}+t_{\mu } + 43*t_{read}) = 8*(250\mu s + 33 \mu s + 43*250\mu s) = 88264 \mu s \approx 88 ms
+8*(t_{write}+t_{\mu } + 43*t_{read}) = 8*(250\mu s + 33 \mu s + 43*250\mu s) \approx 88 ms
 \end{equation}
 
 The read speed of IPbus is assumed to be 250 microseconds in this calculation. We can now assume that one poll of all measurements will approximately take 88 milliseconds. The amount of data points retrieved per second will then be:
@@ -182,11 +196,11 @@ The read speed of IPbus is assumed to be 250 microseconds in this calculation. W
 \frac{1}{0.088}*8*43 =  11.33 * 8*43 \approx 3897
 \end{equation}
 
-The monitoring system polls all measurements approximately 23 times every second, which leads to retrieving approximately 3897 data points every second. The sampling frequency is then 23 Hz,  which is substantially better than our requirement of 1 Hz sampling frequency.
+The monitoring system polls all measurements approximately 11 times every second, which leads to retrieving approximately 3897 data points every second. The sampling frequency is then 11 Hz,  which is substantially better than our requirement of 1 Hz sampling frequency.
 
-Furthermore, a test was performed to measure the timing of polling the data. This test used the prototype setup of the \gls{pcs} discussed in \autoref{ssec: test_setup}. The main limitation of this test is that the test setup only has one layer connected to the \gls{fpga}, meaning we can only poll one layer during the test. We should therefore expect that the measured polling time to be shorter than the calculated one. If we use \autoref{eqn:monitoring_timing} to calculate the speed of polling one layer, the timing is found to be approximately 4.3 ms.
+Furthermore, a test was performed to measure the timing of polling the data. This test used the prototype setup of the \gls{pcs} discussed in \autoref{ssec: test_setup}. The main limitation of this test is that the test setup only has one layer connected to the MB Hub, meaning we can only poll one layer during the test. We should therefore expect the measured polling time to be shorter than the calculated one. If we use \autoref{eqn:monitoring_timing} to calculate the speed of polling one layer, the timing is found to be approximately 4.3 ms.
 
-The test will poll all data points once and record the time spent polling them, it will then repeat this process a million times and find the average of the data. The results, along with comparison of the calculated values, is shown in \autoref{tab:monitor_speed}.
+The test will poll all data points once and record the time spent polling them, it will then repeat this process 1000 times and find the average of the data. The results, along with comparison of the calculated values, is shown in \autoref{tab:monitor_speed}.
 
 \begin{table}[h]
 \centering
@@ -194,19 +208,19 @@ The test will poll all data points once and record the time spent polling them, 
  \hline
   Calculated timing(43 layers) & Calculated timing(1 layer) & Measured timing(1 layer) \\ [0.5ex] 
  \hline\hline
-    44.132ms & 4.3ms & 8.7ms ($\sigma$ = 3.4ms) \\  [1ex] 
+    88ms & 4.3ms & 8.7ms ($\sigma$ = 3.4ms) \\  [1ex] 
  \hline
 \end{tabular}
 \caption{\label{tab:monitor_speed} Comparison of the polling timing of the monitoring API}
 \end{table}
 \FloatBarrier
 
-Polling the test setup took 8.7 ms with a standard deviation of 3.4 ms. Comparing the calculated timing of polling one layer with the measured timing, we can see that the calculated timing of one layer barely does not fall within one standard deviation of the measured timing. The discrepancy between the two values can be explained by the calculations not considering the software delay.
+Polling the test setup took 8.7 ms with a standard deviation of 3.4 ms. Comparing the calculated timing of polling one layer with the measured timing, we can see that the calculated timing barely does not fall within one standard deviation of the measured timing. The discrepancy between the two values can be explained by the calculations not considering the software delay.
 
 \subsubsection{Storage Space}
 Storage space is a vital part of the database, and is determined by many factors. The storage space needed for this project is determined by the amount of data retrieved every second, the resolution of said data, the retention policy of the buckets in the database and how much space is needed to store the data points in the database.
 
-The amount of data retrieved every second has already been calculated in \autoref{eqn:data_points_per_second}, amounting to 3897 data points per second. The type of data stored in the monitoring operation, excluding any log messages, is float numbers. The resolution of the float numbers is the amount of decimal points used for the data point, and therefore this must be decided beforehand. The temperature will not change erratically, an accuracy up to the first decimal point is therefore acceptable. The current and voltage is measured in mA and mV, respectively, already giving us a high level of precision. The voltage is measured over a shunt capacitor that can read voltages up to 250 mV and temperatures will obviously not exceed 1000 degrees, so 4 decimals is a reasonable resolution to store the data in, giving us one decimal point accuracy for both current and temperature. This translates to needing 3 bytes, or 12 bits to store the information in our database. In the InfluxDB hardware sizing guidelines, it is stated that a non-string value requires approximately 3 bytes of data to be stored\cite{influx_sizing}. Note that this guideline is specified for Influx V1, but we can safely assume this also applies for Influx V2. This leads us to requiring 6 bytes of storage for a single data point. The amount of bytes of data stored each second will then be: 
+The amount of data retrieved every second has already been calculated in \autoref{eqn:data_points_per_second}, amounting to 3897 data points per second. The type of data stored in the monitoring operation, excluding any log messages, is float numbers. The resolution of the float numbers is the amount of decimal points used for the data point, and therefore this must be decided beforehand. The temperature will not change erratically, an accuracy up to the first decimal point is therefore acceptable. The current and voltage is measured in mA and mV, respectively, already giving us a high level of precision. The voltage is measured over a shunt capacitor that can read voltages up to 250 mV and temperatures will obviously not exceed 1000 degrees, so 4 decimals is a reasonable resolution to store the data in, giving us one decimal point accuracy for both current and temperature. This translates to needing 3 bytes, or 12 bits to store the information in our database. In the InfluxDB hardware sizing guidelines, it is stated that a non-string value requires approximately 3 bytes of data to be stored\cite{influx_sizing}. This leads us to requiring 6 bytes of storage for a single data point. The amount of bytes of data stored each second will then be: 
 
 \begin{equation} \label{eqn:total_bytes_per_second}
 3897*4 = 15588 
@@ -233,11 +247,11 @@ In total, 500 GB of storage allows us to store data for a little over six years.
 
 InfluxDB comes with a variety of options to optimize the data acquisition process. These different options can have a significant impact on the data acquisition and must be considered to ensure it is a good fit for our system.
 
-InfluxDB features several write options for its Python client: synchronous, asynchronous and batching writes. The default option used is batching writes, which is what is considered optimal for InfluxDB. Batching writes collects a specified amount of data points and when full, establishes a https connection with the database and sends the data. This process is very quick in comparison to synchronous writes, which has to establish a https connection for every data point.
+InfluxDB features several write options for its Python client: synchronous, asynchronous and batching writes. The default option used is batching writes, which is considered optimal for InfluxDB. Batching writes collects a specified amount of data points and when full, establishes a https connection with the database and sends the data. This process is very quick in comparison to synchronous writes, which has to establish a https connection for every data point.
 
-The batching size can be customized by the user, but the optimal batch size for influxDB is 5000\cite{influx_batching}. The drawback of the batching is that data will not be sent until the batch is full. A large batching size can lead to long wait times until the data is sent to the database, but this is not a problem if we keep a batch size 5000. The database would get updated about every second in this instance.
+The batching size can be customized by the user, but the optimal batch size for influxDB is 5000\cite{influx_batching}. The drawback of the batching is that data will not be sent until the batch is full.
 
-We can compare the speed of different batching sizes by inserting 43000 data points into the database and record the time taken. \autoref{tab:specs} shows off the time difference between 5, 500, and 5000 batch size.
+We can compare the speed of different batching sizes by inserting 43$\cdot$ 1000 data points into the database and record the time taken. \autoref{tab:specs} shows off the time difference between 50, 500, and 5000 batch size.
 \begin{table}[h]
 \centering
 \begin{tabular}{||c c||} 
@@ -258,7 +272,7 @@ We can compare the speed of different batching sizes by inserting 43000 data poi
 \end{table}
 \FloatBarrier
 
-The results from the table shows that the synchronous option is substantially slower than the batching options. The results also show that a higher batch size is faster, but there is diminishing returns past 500. 
+The results from the table show that the synchronous option is substantially slower than the batching options. The results also show that a higher batch size is faster, but there are diminishing returns past 500. 
 
 A large batch size could affect how quickly the values are inserted into the database, since the \gls{api} will wait until the entire batch is filled up before sending, but this not an issue if we use the recommended batch size of 5000. The monitoring \gls{api} polls approximately 3897 values each second, meaning a batch of 5000 will be filled up every 1.3 second.
 
@@ -267,45 +281,77 @@ A large batch size could affect how quickly the values are inserted into the dat
  \subsection{Downsampling of InfluxDB}
  \label{ssec: downsampling}
 
- Downsampling is the process of removing sample points in a signal and it is crucial to do for three reasons: to save disk space used for storing the data to reduce network traffic, and to increase performance of your server. Recording data from a sensor inadvertently leads to redundant data points. If the measurement remains static over a greater period of time, recording high resolution data of essentially the same value is a waste of space. Additionally, the data is received from an instrument with an uncertainty to its measurements, meaning that storing data points that are within the uncertainty range of the previous data point is also redundant. We want to downsample our data in such a way that we remove as much data as possible, while keeping the information retained.
+ Downsampling is the process of removing sample points in a signal and it is crucial to do for three reasons: to save disk space used for storing the data, to reduce network traffic, and to increase performance of your server. Recording data from a sensor inadvertently leads to redundant data points. If the measurement remains static over a greater period of time, recording high resolution data of essentially the same value is a waste of space. Additionally, the data is received from an instrument with an uncertainty to its measurements, meaning that storing data points that are within the uncertainty range of the previous data point is also redundant. We want to downsample our data in such a way that we remove as much data as possible, while retaining the information.
  
- There are many ways to downsample your data, there is entire separate fields on the subject, but for this project there is no need to downsample with cutting edge technology. However, efforts should still be made to avoid storing too much redundant data. It is important for this monitoring system to record abnormal data points, i.e. spikes in the measurement data, which can help us diagnose issues with the \gls{dtc}. Using mean or similar filters results in too coarse of a filtering to be used in this project, this does not mean that these filters should never be used, but they are not suitable for a short retention database.
+ There are many ways to downsample your data, there is an entirely separate field on the subject, but for this project there is no need to downsample with cutting edge technology. However, efforts should still be made to avoid storing too much redundant data. It is important for this monitoring system to record abnormal data points, i.e. spikes in the measurement data, which can help us diagnose issues with the \gls{dtc}. Using mean or similar filters results in too coarse of a filtering to be used in this project.
  
- Creating a custom filter that fits our system is one solution, the question then becomes what type of filter fits the best. A filtering technique used by OSIsoft in their PI servers seems promising to base our own filter on, due to it focusing on filtering data from instruments\cite{osisoft_exception}. The technique uses what is know as an exception and compression rule, that aims to reduce the amount of data points from an instrument while retaining the information of the graph. The exception filter is based on removing data that can be perceived as noise from the sensors. \autoref{fig: osisoft_exception} shows how this is implemented in OSIsoft's PI servers.
+ Creating a custom filter that fits our system is one solution, the question then becomes what type of filter fits the best. A filtering technique used by OSIsoft in their PI servers seems promising to base our filter on, due to its focus on filtering data from instruments\cite{osisoft_exception}. The technique uses an exception and compression rule, that aims to reduce the amount of data points from an instrument while retaining the information of the graph. The exception filter is based on removing data that can be perceived as noise from the sensors. \autoref{fig: osisoft_exception} shows how this is implemented in OSIsoft's PI servers.
  
 \begin{figure}[!ht]
     \centering
     \includegraphics[scale=1.3]{images/exception_process.pdf}
-    \caption{Image showcasing an example the exception filter. Points in the deadband is dropped by the filter. image based on slides from OSIsoft\cite{osisoft_image}}
+    \caption{Image showcasing an example of the exception filter. Points in the deadband set by "ExMax" and "ExDev" is dropped by the filter. image based on slides from OSIsoft\cite{osisoft_image}}
     \label{fig: osisoft_exception}
 \end{figure}
 \FloatBarrier 
  
-The filter starts with a "snapshot" value, point A in the figure, and sets two restrictions on the next points which is defined by the two parameters "ExMax" and "ExDev". "ExDev" defines the deadband of the filter, all points that appear in the deadband is considered noise and are removed from the set. If a point is recorded outside the deadband, then that point becomes the new "snapshot" value that defines a new deadband around it. The "ExMax" attribute determines the time span allowed between two points. If no new values exceeding the deadband is recorded for an "ExMax" amount of time, then the next data point is kept and set to be the new "snapshot" value, regardless if it was in the deadband of the previous snapshot. This is done to prevent too large gaps between recorded data points. Lastly, when a data point exceed the deadband, the previous point will be retained, in the case of \autoref{fig: osisoft_exception}, point E passes the filter because point F exceeded the deadband. This is done to retain the shape of the graph, \autoref{fig: osisoft_last_point} shows graph that demonstrates how not retaining the last point can affect the shape of the graph.
+The filter starts with a "snapshot" value, which is point A in the figure. The filters sets two restrictions on the next points which are defined by the two parameters "ExMax" and "ExDev". "ExDev" defines the deadband of the filter, all points that appear in the deadband is considered noise and are removed from the set. If a point is recorded outside the deadband, then that point becomes the new "snapshot" value that defines a new deadband around it. The "ExMax" attribute determines the time span allowed between two points. If no new values exceeding the deadband is recorded for an "ExMax" amount of time, then the next data point is kept and set to be the new "snapshot" value, regardless of whether it was in the deadband of the previous snapshot. This is done to prevent excessive  gaps between recorded data points. Lastly, when the data point exceeds the deadband, the previous point will be retained. This is done to retain the shape of the graph, \autoref{fig: osisoft_last_point} shows a graph that demonstrates how not retaining the last point can affect the shape of the graph.
 
 \begin{figure}[!htpb]
     \centering
     \includegraphics[width=12cm, scale=4]{images/exception_process_2.pdf}
-    \caption{Graph showing the projected graph depending on if we retain the last point before the snapshot value. Based on slide from\cite{osisoft_exception}}
+    \caption{Graph showing the projected graph depending on if we retain the last point before the snapshot value. Based on slide from\cite{osisoft_exception}.}
     \label{fig: osisoft_last_point}
 \end{figure}
 \FloatBarrier 
  
 The graph displays the exception filtering method, where point B to E is not included in the set due to them being in the deadband, which gives us the dotted graph. The orange graph keeps point E in its set, since it was the previous value of point F. The dotted graph would give us the impression of a steady increase in the temperature from point A to point F, even though that is not the case. The orange graph keeps one extra value in its set, and in return, it is a more accurate representation of the measurements.
  
- Lastly we can mention the compression technique, which uses a "swinging door" algorithm to remove redundant data points. The process makes a line between two points and remove the next data points who's angle in relation to this line is not above a certain threshold. This process is more complicated to implement than the exception test and it is currently seen as unnecessary for this project. The compression test can be revisited in the future if database performance becomes a problem.
+ Lastly we can mention the compression technique, which uses a "swinging door" algorithm to remove redundant data points. The process makes a line between two points and removes the next data points whose angle in relation to this line is not above a certain threshold. This process is more complicated to implement than the exception test and it is currently seen as unnecessary for this project. The compression test can be revisited in the future if database performance becomes a problem.
  
- Implementing custom filters for our data points means that we must be able to manipulate the data points in a clear fashion before sending them to the Influx database. Pandas dataframe is a two dimensional data structure with rows and axes for efficiently setting up tables of data and manipulating it. InfluxDB is also compatible with Panda dataframes and can be inserted directly into the database. By inserting the data into Panda dataframe, we can analyze the data and modify it as we wish, this allows us to efficiently create custom filters in Python. A custom class, \textit{panda\_filter}, is responsible for managing the pandas dataframes and contain functions to format the inserted data. The class contains three pandaframes, one for each measurement type, the measurements are separated so that the data points can be modified without affecting the other measurement types. The dataframe consists of a column containing the actual data, and a column for the timestamp. \autoref{fig: panda_example} shows an example of the structure of the panda dataframes. 
+ Implementing custom filters for our data points means that we must be able to manipulate the data points in a clear fashion before sending them to the Influx database. Pandas dataframe is a two dimensional data structure with rows and axes for efficiently setting up tables of data and manipulating it. InfluxDB is also compatible with Pandas dataframes and can be inserted directly into the database. By inserting the data into Panda dataframe, we can analyze the data and modify it as we wish, this allows us to efficiently create custom filters in Python. A custom class, \textit{panda\_filter}, is responsible for managing the pandas dataframes and contain functions to format the inserted data. The class contains three Pandas frames, one for each measurement type. The dataframe consists of a column containing the actual data, and a column for the timestamp. \autoref{lst: panda_example} shows an example of the structure of the panda dataframes. 
  
- \begin{figure}[!htpb]
-    \centering
-    \includegraphics[width=5cm, scale=1]{images/panda_frame_example.png}
-    \caption{Image showing the setup of the three dataframes used in the panda filter class.}
-    \label{fig: panda_example}
-\end{figure}
-\FloatBarrier 
+ \lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{dkgreen},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+ \begin{lstlisting}[caption={Listing showing the setup of the three dataframes used in the panda filter class.},captionpos=b, label=lst: panda_example]
+    temp    _time
+0     1       2022-10-24 13:21:31.373319
+1     1       2022-10-24 13:21:31.375163
+2     2       2022-10-24 13:21:31.375163
+3     3       2022-10-24 13:21:31.375163
+4     5       2022-10-24 13:21:31.375163
 
-The index is the leftmost value, followed by the measurement type column and lastly the timestamp column, which uses the "timedate" library format. The InfluxDB client supports panda dataframe, but the index must be set to the timestamp for it to be accepted by the client. The panda filter class automatically set the timestamp to be the index when outputting the dataframes.
+      volt    _time
+0     2       2022-10-24 13:21:31.373319
+1     3       2022-10-24 13:21:31.375163
+2     4       2022-10-24 13:21:31.375163
+3     6       2022-10-24 13:21:31.375163
+4     7       2022-10-24 13:21:31.375163
+
+      amp     _time
+0     3       2022-10-24 13:21:31.373319
+1     3       2022-10-24 13:21:31.375163
+2     4       2022-10-24 13:21:31.375163
+3     8       2022-10-24 13:21:31.375163
+4     9       2022-10-24 13:21:31.375163
+    \end{lstlisting}
+ 
+
+The index is the leftmost value, followed by the measurement type column and lastly the timestamp column, which uses the "timedate" library format. The InfluxDB client supports Pandas dataframes, but the index must be set to the timestamp for it to be accepted by the client. The panda filter class automatically sets the timestamp to be the index when outputting the dataframes.
 
 Another layer of downsampling is performed between the short retention and the long retention buckets in InfluxDB. The long retention bucket stores data for historical purposes and high resolution data is not needed, therefore a mean, or nth sample filter can be performed between the two buckets. The data flow for the monitor system is shown in \autoref{fig: data_process}.
 
